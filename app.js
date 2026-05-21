@@ -2,6 +2,7 @@ const SITE_CONFIG = {
   title: "Claude Code 中文实践文档",
   githubRepo: "StackTao/ClaudeCodeGuide",
   githubBranch: "main",
+  githubPages: "https://stacktao.github.io/ClaudeCodeGuide/",
 };
 
 const DOC_LABELS = {
@@ -418,6 +419,8 @@ function updateGithubLinks() {
   byId("githubTopLink").href = githubUrl("");
   byId("githubRepoLink").href = githubUrl("");
   byId("githubSidebarLink").href = githubUrl("");
+  byId("githubPagesLink").href = SITE_CONFIG.githubPages;
+  byId("githubActionsLink").href = githubUrl("/actions/workflows/pages.yml");
   byId("githubEditLink").href = githubUrl(`/edit/${branch}/${doc.file}`);
   byId("githubEditLink").title = `编辑 ${doc.file} / ${section.title}`;
   byId("githubHistoryLink").href = githubUrl(`/commits/${branch}/${doc.file}`);
@@ -436,6 +439,7 @@ async function loadGithubStatus() {
     const branch = repo.default_branch || SITE_CONFIG.githubBranch;
     state.githubBranch = branch;
     updateGithubLinks();
+    setText("githubPagesText", repo.has_pages ? `GitHub Pages 已启用：${SITE_CONFIG.githubPages}` : "GitHub Pages 尚未启用：推送后请在仓库 Settings > Pages 选择 GitHub Actions。");
 
     const response = await fetch(`https://api.github.com/repos/${SITE_CONFIG.githubRepo}/commits/${branch}`, {
       headers: { Accept: "application/vnd.github+json" },
@@ -448,6 +452,7 @@ async function loadGithubStatus() {
     status.textContent = `${branch} @ ${sha} · ${date} · ${message}`;
   } catch (error) {
     status.textContent = `无法读取实时状态，可直接打开仓库查看：${error.message}`;
+    setText("githubPagesText", `线上站点地址：${SITE_CONFIG.githubPages}`);
   }
 }
 
