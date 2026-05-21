@@ -727,11 +727,46 @@ textarea {
   margin: 0;
 }
 
+.feedback-tabs {
+  display: inline-flex;
+  gap: 4px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface-muted);
+  margin-top: 16px;
+  padding: 4px;
+}
+
+.feedback-tab {
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 650;
+  padding: 7px 10px;
+}
+
+.feedback-tab.active {
+  background: var(--surface);
+  color: var(--text-strong);
+  box-shadow: 0 1px 0 rgba(17, 24, 39, 0.05);
+}
+
 .feedback-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 260px;
   gap: 16px;
   margin-top: 16px;
+}
+
+.feedback-panel {
+  display: none;
+}
+
+.feedback-panel.active {
+  display: grid;
 }
 
 .feedback-form {
@@ -746,6 +781,7 @@ textarea {
   font-size: 13px;
 }
 
+.feedback-form select,
 .feedback-form input,
 .feedback-form textarea {
   border: 1px solid var(--line-strong);
@@ -756,6 +792,7 @@ textarea {
   resize: vertical;
 }
 
+.feedback-form select:focus,
 .feedback-form input:focus,
 .feedback-form textarea:focus {
   outline: none;
@@ -785,23 +822,63 @@ textarea {
   margin: 6px 0;
 }
 
-.comments {
+.local-drafts {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: 14px;
+}
+
+.draft-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.issue-list {
   border-top: 1px solid var(--line);
   margin-top: 24px;
   padding-top: 18px;
 }
 
-.comments-list {
+.comments-list,
+.issue-list-body {
   display: grid;
   gap: 10px;
   margin-top: 12px;
 }
 
-.comment {
+.comment,
+.issue-item {
   border: 1px solid var(--line);
   background: var(--surface);
   border-radius: var(--radius);
   padding: 13px;
+}
+
+.issue-item {
+  display: grid;
+  gap: 3px;
+  text-decoration: none;
+}
+
+.issue-item:hover {
+  border-color: var(--accent);
+  background: var(--surface-active);
+}
+
+.issue-item span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.issue-item strong {
+  color: var(--text-strong);
+  font-size: 14px;
+  line-height: 1.4;
 }
 
 .comment header {
@@ -910,8 +987,15 @@ textarea {
 
   .section-pager,
   .feedback-layout,
-  .feedback-heading {
+  .feedback-heading,
+  .draft-actions {
     grid-template-columns: 1fr;
     display: grid;
+  }
+
+  .feedback-tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
   }
 }

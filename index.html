@@ -70,32 +70,51 @@
               <div class="feedback-heading">
                 <div>
                   <p class="eyebrow">反馈与修正</p>
-                  <h2>本节有错误或缺资料？</h2>
+                  <h2>本节有错误、缺资料或想补案例？</h2>
                 </div>
                 <button class="secondary-button" id="copyPageLink" type="button">复制本页引用</button>
               </div>
 
+              <div class="feedback-tabs" role="tablist" aria-label="反馈方式">
+                <button class="feedback-tab active" data-feedback-tab="github" type="button">GitHub 在线反馈</button>
+                <button class="feedback-tab" data-feedback-tab="draft" type="button">本地草稿</button>
+              </div>
+
               <div class="feedback-layout">
-                <form class="feedback-form" id="feedbackForm">
+                <form class="feedback-form feedback-panel active" id="feedbackForm" data-feedback-panel="github">
                   <label>
-                    昵称
-                    <input id="commentName" type="text" maxlength="40" placeholder="可留空" />
+                    反馈类型
+                    <select id="feedbackType">
+                      <option value="事实错误">事实错误</option>
+                      <option value="缺少来源">缺少来源</option>
+                      <option value="补充案例">补充案例</option>
+                      <option value="样式或交互问题">样式或交互问题</option>
+                    </select>
                   </label>
                   <label>
-                    评论 / 修改建议
+                    问题 / 修改建议
                     <textarea
                       id="commentBody"
                       rows="6"
-                      placeholder="指出哪一节有误、缺少哪个来源、建议如何改..."
+                      placeholder="指出哪一句有误、缺少哪个来源、建议如何改。提交后会生成 GitHub Issue 草稿。"
                       required
                     ></textarea>
                   </label>
                   <div class="feedback-actions">
-                    <button class="primary-button" type="submit">保存到本地评论</button>
+                    <button class="primary-button" type="submit">打开 GitHub Issue</button>
                     <button class="secondary-button" id="copyIssue" type="button">复制修改请求</button>
                     <a class="secondary-button" id="openIssue" target="_blank" rel="noreferrer">打开 Issue 草稿</a>
+                    <a class="secondary-button" id="searchIssues" target="_blank" rel="noreferrer">查看相关反馈</a>
                   </div>
                 </form>
+
+                <div class="feedback-panel local-drafts" data-feedback-panel="draft">
+                  <div class="draft-actions">
+                    <button class="secondary-button" id="saveDraft" type="button">保存为本地草稿</button>
+                    <button class="text-button" id="clearComments" type="button">清空本节草稿</button>
+                  </div>
+                  <div id="commentsList" class="comments-list"></div>
+                </div>
 
                 <div class="update-card">
                   <h3>维护规则</h3>
@@ -108,12 +127,12 @@
                 </div>
               </div>
 
-              <div class="comments">
+              <div class="issue-list">
                 <div class="comments-title">
-                  <h3>本地评论</h3>
-                  <button class="text-button" id="clearComments" type="button">清空本页评论</button>
+                  <h3>GitHub 相关反馈</h3>
+                  <button class="text-button" id="refreshIssues" type="button">刷新</button>
                 </div>
-                <div id="commentsList" class="comments-list"></div>
+                <div id="issueList" class="issue-list-body"></div>
               </div>
             </section>
           </article>

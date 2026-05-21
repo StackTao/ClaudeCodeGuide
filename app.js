@@ -321,6 +321,7 @@ function renderDoc(docSlug, sectionSlug) {
   byId("articleContent").innerHTML = renderMarkdown(sectionBody(section));
   renderToc();
   renderComments();
+  renderIssues();
   document.querySelectorAll(".nav-group").forEach((item) => item.classList.toggle("open", item.dataset.group === doc.slug));
   document.querySelectorAll(".nav-item").forEach((item) => item.classList.toggle("active", item.dataset.doc === doc.slug));
   document.querySelectorAll(".section-item").forEach((item) =>
@@ -383,13 +384,18 @@ function currentSection() {
 function buildIssueBody() {
   const doc = currentDoc();
   const section = currentSection();
+  const feedbackType = byId("feedbackType")?.value || "文档反馈";
   const body = byId("commentBody").value.trim() || "请在这里描述发现的错误、建议修改内容和参考来源。";
   return [
+    `## 反馈类型`,
+    feedbackType,
+    "",
     `## 文档位置`,
     `- 页面：${doc.title}`,
     `- 章节：${section.title}`,
     `- 文件：${doc.file}`,
-    `- 本地锚点：${location.href}`,
+    `- 页面链接：${location.href}`,
+    `- 章节标识：${doc.slug}/${section.slug}`,
     "",
     "## 问题或建议",
     body,
@@ -405,11 +411,16 @@ function buildIssueBody() {
 function updateIssueLinks() {
   const doc = currentDoc();
   const section = currentSection();
-  const title = encodeURIComponent(`文档反馈：${doc.title} / ${section.title}`);
+  const feedbackType = byId("feedbackType")?.value || "文档反馈";
+  const titleText = `[${feedbackType}] ${doc.title} / ${section.title}`;
+  const title = encodeURIComponent(titleText);
   const body = encodeURIComponent(buildIssueBody());
-  const issueUrl = githubUrl(`/issues/new?title=${title}&body=${body}`);
+  const labels = encodeURIComponent("documentation,feedback");
+  const issueUrl = githubUrl(`/issues/new?title=${title}&body=${body}&labels=${labels}`);
+  const query = encodeURIComponent(`repo:${SITE_CONFIG.githubRepo} is:issue "${doc.slug}/${section.slug}"`);
   byId("openIssue").href = issueUrl;
   byId("issueTopLink").href = issueUrl;
+  byId("searchIssues").href = githubUrl(`/issues?q=${query}`);
 }
 
 function updateGithubLinks() {
@@ -497,7 +508,51 @@ function renderComments() {
         `,
         )
         .join("")
-    : `<p class="empty">还没有本地评论。这里的数据只保存在你的浏览器中。</p>`;
+    : `<p class="empty">还没有本地草稿。草稿只保存在你的浏览器中，不会同步给其他读者。</p>`;
+}
+
+function issueSearchQuery() {
+  const doc = currentDoc();
+  const section = currentSection();
+  return `"${doc.slug}/${section.slug}"`;
+}
+
+async function renderIssues() {
+  const list = byId("issueList");
+  if (!list) return;
+  list.innerHTML = `<p class="empty">正在读取 GitHub 相关反馈...</p>`;
+  const query = encodeURIComponent(`repo:${SITE_CONFIG.githubRepo} is:issue ${issueSearchQuery()}`);
+  try {
+    const response = await fetch(`https://api.github.com/search/issues?q=${query}&per_page=5`, {
+      headers: { Accept: "application/vnd.github+json" },
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
+    list.innerHTML = data.items?.length
+      ? data.items
+          .map(
+            (issue) => `
+              <a class="issue-item" href="${issue.html_url}" target="_blank" rel="noreferrer">
+                <span>#${issue.number} · ${escapeHtml(issue.state === "open" ? "开放" : "已关闭")}</span>
+                <strong>${escapeHtml(issue.title)}</strong>
+              </a>
+            `,
+          )
+          .join("")
+      : `<p class="empty">暂无关联 Issue。你可以用上方按钮提交本节反馈。</p>`;
+  } catch (error) {
+    const fallback = byId("searchIssues")?.href || githubUrl("/issues");
+    list.innerHTML = `<p class="empty">无法读取 GitHub Issue：${escapeHtml(error.message)}。<a href="${fallback}" target="_blank" rel="noreferrer">打开 GitHub 搜索</a></p>`;
+  }
+}
+
+function switchFeedbackTab(tabName) {
+  document.querySelectorAll("[data-feedback-tab]").forEach((button) => {
+    button.classList.toggle("active", button.dataset.feedbackTab === tabName);
+  });
+  document.querySelectorAll("[data-feedback-panel]").forEach((panel) => {
+    panel.classList.toggle("active", panel.dataset.feedbackPanel === tabName);
+  });
 }
 
 function searchDocs(query) {
@@ -563,26 +618,37 @@ function bindEvents() {
     event.preventDefault();
     const body = byId("commentBody").value.trim();
     if (!body) return;
+    window.open(byId("openIssue").href, "_blank", "noopener,noreferrer");
+  });
+
+  byId("saveDraft").addEventListener("click", () => {
+    const body = byId("commentBody").value.trim();
+    if (!body) return;
     const comments = getComments();
     comments.unshift({
-      name: byId("commentName").value.trim(),
+      name: byId("feedbackType").value,
       body,
       time: new Date().toLocaleString(),
     });
     saveComments(comments);
-    byId("commentBody").value = "";
     renderComments();
     updateIssueLinks();
-    showToast("已保存到本地评论");
+    switchFeedbackTab("draft");
+    showToast("已保存为本地草稿");
   });
 
+  document.querySelectorAll("[data-feedback-tab]").forEach((button) => {
+    button.addEventListener("click", () => switchFeedbackTab(button.dataset.feedbackTab));
+  });
+  byId("feedbackType").addEventListener("change", updateIssueLinks);
   byId("commentBody").addEventListener("input", updateIssueLinks);
   byId("copyIssue").addEventListener("click", () => copyText(buildIssueBody()));
   byId("copyPageLink").addEventListener("click", () => copyText(`${currentDoc().title} / ${currentSection().title}\n${location.href}`));
+  byId("refreshIssues").addEventListener("click", renderIssues);
   byId("clearComments").addEventListener("click", () => {
     saveComments([]);
     renderComments();
-    showToast("已清空本页评论");
+    showToast("已清空本节草稿");
   });
 }
 
