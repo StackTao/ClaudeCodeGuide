@@ -549,9 +549,12 @@ async function renderIssues() {
 function switchFeedbackTab(tabName) {
   document.querySelectorAll("[data-feedback-tab]").forEach((button) => {
     button.classList.toggle("active", button.dataset.feedbackTab === tabName);
+    button.setAttribute("aria-selected", String(button.dataset.feedbackTab === tabName));
   });
   document.querySelectorAll("[data-feedback-panel]").forEach((panel) => {
-    panel.classList.toggle("active", panel.dataset.feedbackPanel === tabName);
+    const active = panel.dataset.feedbackPanel === tabName;
+    panel.classList.toggle("active", active);
+    panel.hidden = !active;
   });
 }
 

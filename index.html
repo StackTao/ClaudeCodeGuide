@@ -109,12 +109,20 @@
                     </div>
                   </form>
 
-                  <div class="feedback-panel local-drafts" data-feedback-panel="draft">
+                  <div class="feedback-panel local-drafts" data-feedback-panel="draft" hidden>
                     <div class="draft-actions">
                       <button class="secondary-button" id="saveDraft" type="button">保存为本地草稿</button>
                       <button class="text-button" id="clearComments" type="button">清空本节草稿</button>
                     </div>
                     <div id="commentsList" class="comments-list"></div>
+                  </div>
+
+                  <div class="issue-list">
+                    <div class="comments-title">
+                      <h3>GitHub 相关反馈</h3>
+                      <button class="text-button" id="refreshIssues" type="button">刷新</button>
+                    </div>
+                    <div id="issueList" class="issue-list-body"></div>
                   </div>
                 </div>
 
@@ -127,14 +135,6 @@
                     <li>Issue 应定位到具体章节。</li>
                   </ol>
                 </div>
-              </div>
-
-              <div class="issue-list">
-                <div class="comments-title">
-                  <h3>GitHub 相关反馈</h3>
-                  <button class="text-button" id="refreshIssues" type="button">刷新</button>
-                </div>
-                <div id="issueList" class="issue-list-body"></div>
               </div>
             </section>
           </article>

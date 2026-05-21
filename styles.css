@@ -43,6 +43,10 @@
   box-sizing: border-box;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -697,6 +701,7 @@ textarea {
   border-top: 1px solid var(--line);
   margin-top: 46px;
   padding-top: 24px;
+  max-width: 100%;
 }
 
 .feedback-heading,
@@ -810,6 +815,7 @@ textarea {
   display: flex;
   flex-wrap: wrap;
   gap: 9px;
+  align-items: center;
 }
 
 .feedback-actions > * {
@@ -852,7 +858,7 @@ textarea {
 
 .issue-list {
   border-top: 1px solid var(--line);
-  margin-top: 24px;
+  margin-top: 20px;
   padding-top: 18px;
 }
 
