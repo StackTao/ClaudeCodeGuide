@@ -288,7 +288,7 @@ function renderToc() {
     .filter((heading) => heading.level >= 2 && heading.level <= 3)
     .map(
       (heading) =>
-        `<a class="toc-h${heading.level}" href="#${heading.id}">${escapeHtml(heading.text.replace(/`/g, ""))}</a>`,
+        `<button class="toc-h${heading.level}" data-heading="${escapeHtml(heading.id)}" type="button">${escapeHtml(heading.text.replace(/`/g, ""))}</button>`,
     )
     .join("");
   byId("toc").innerHTML = `<div class="toc-title">本页目录</div>${tocItems}`;
@@ -582,6 +582,13 @@ function bindEvents() {
   byId("articleContent").addEventListener("click", (event) => {
     const item = event.target.closest("[data-section]");
     if (item) navigate(item.dataset.doc, item.dataset.section);
+  });
+  byId("toc").addEventListener("click", (event) => {
+    const item = event.target.closest("[data-heading]");
+    if (!item) return;
+    const heading = document.getElementById(item.dataset.heading);
+    if (!heading) return;
+    heading.scrollIntoView({ behavior: "smooth", block: "start" });
   });
 
   byId("feedbackForm").addEventListener("submit", (event) => {

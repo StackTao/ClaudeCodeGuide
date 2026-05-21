@@ -452,6 +452,7 @@ textarea {
   color: var(--text-strong);
   line-height: 1.28;
   letter-spacing: 0;
+  scroll-margin-top: 86px;
 }
 
 .article-content h1 {
@@ -611,16 +612,21 @@ textarea {
   margin-bottom: 10px;
 }
 
-.toc a {
+.toc button {
   display: block;
+  width: 100%;
+  border: 0;
+  background: transparent;
   color: var(--muted);
+  cursor: pointer;
   font-size: 12px;
   line-height: 1.45;
   padding: 5px 0;
+  text-align: left;
   text-decoration: none;
 }
 
-.toc a:hover {
+.toc button:hover {
   color: var(--accent-dark);
 }
 
