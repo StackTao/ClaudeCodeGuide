@@ -1,6 +1,6 @@
 # Claude Code 资料索引与统计
 
-> 统计日期：2026-05-20  
+> 统计日期：2026-05-21  
 > 用途：为 `claude-code-guide.md` 提供来源、可信度标注和主题覆盖说明。
 
 ## 1. 来源统计
@@ -230,3 +230,44 @@
 | 101 | Claude Code output styles | default、explanatory、learning、自定义 output style | 高 | https://docs.anthropic.com/en/docs/claude-code/output-styles |
 | 102 | Claude Code ultrareview | 云端多 agent 深度审查、成本和适用阶段 | 高 | https://code.claude.com/docs/en/ultrareview |
 | 103 | How Claude Code works | auto compaction、auto mode、上下文机制 | 高 | https://code.claude.com/docs/en/how-claude-code-works |
+
+## 9. 2026-05-21 补充来源（v2.1.144 / v2.1.145、worktree、marketplace、中文社区）
+
+| # | 来源 | 主题 | 可信度 | 链接 |
+|---:|---|---|---|---|
+| 104 | anthropics/claude-code CHANGELOG.md | 官方 changelog 源 | 高 | https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md |
+| 105 | anthropics/claude-code releases | tag 列表 | 高 | https://github.com/anthropics/claude-code/releases |
+| 106 | Claude Code Worktrees 官方页 | `--worktree`、`isolation: worktree`、PR worktree、baseRef、WorktreeCreate hook | 高 | https://code.claude.com/docs/en/worktrees |
+| 107 | Claude Code commands 参考 | `/radio`、`/usage-credits`、`/plugin`、`/agents` 等 | 高 | https://code.claude.com/docs/en/commands |
+| 108 | anthropics/claude-plugins-official | 官方 marketplace（启动自动加载） | 高 | https://github.com/anthropics/claude-plugins-official |
+| 109 | claudemarketplaces.com directory | 74 marketplaces / 1182 plugins 社区目录（2026-05-19 数据） | 中高 | https://claudemarketplaces.com/ |
+| 110 | Chat2AnyLLM/awesome-claude-plugins | marketplace 与插件清单（中文友好） | 中 | https://github.com/Chat2AnyLLM/awesome-claude-plugins |
+| 111 | xiaolai/claude-plugin-marketplace | 自动镜像 Anthropic docs 的 8 个 skill | 中 | https://github.com/xiaolai/claude-plugin-marketplace |
+| 112 | Releasebot Claude Code 更新汇总 | v2.1.144/145 中文化要点 | 中 | https://releasebot.io/updates/anthropic/claude-code |
+| 113 | Pasquale Pillitteri Claude Code May 2026 release notes | `/radio` 出圈过程 + marketplace 演进 | 中 | https://pasqualepillitteri.it/en/news/2223/claude-code-may-2026-release-notes-radio-plugin-marketplace |
+| 114 | Agensi Plugin Marketplace Guide (2026) | marketplace 安装、blockedMarketplaces、依赖强制 | 中 | https://www.agensi.io/learn/claude-code-plugin-marketplace-guide |
+| 115 | Claude Directory Worktrees Guide (2026) | worktree + subagent 实战 | 中 | https://www.claudedirectory.org/blog/claude-code-worktrees-guide |
+| 116 | Samanvya Tripathi: subagents + parallel | 多 subagent 提速 5x 案例 | 中 | https://samanvya.dev/blog/claude-code-subagents-parallel |
+| 117 | Tembo.io: Claude Code Subagents 2026 | subagent 设计模式 | 中 | https://www.tembo.io/blog/claude-code-subagents |
+| 118 | The Prompt Shelf Worktree Guide | 命名、清理、合并模板 | 中低 | https://thepromptshelf.dev/blog/claude-code-git-worktree-guide/ |
+| 119 | QCode.cc Worktree 并行指南（中英） | 团队多 agent 隔离 | 中低 | https://qcode.cc/en/claude-code-worktree-parallel-guide |
+| 120 | V2EX：tw93《你不知道的 Claude Code：架构、治理与工程实践》 | 半年深度使用经验、两账号 $40/月成本反馈 | 中 | https://v2ex.com/t/1199971 |
+| 121 | V2EX：用 Claude Code 半年的瓶颈反思 | 提效 → 副业转化的实际工时分配 | 中低 | https://www.v2ex.com/t/1214170 |
+| 122 | V2EX：高强度使用半年后的吐槽与替代品 | 失败模式与替代工具线索（信息含推广） | 中低 | https://v2ex.com/t/1211200 |
+| 123 | V2EX：用 Codex 补全泄露代码 | Claude/Codex 协作对照 | 中低 | https://global.v2ex.com/t/1203231 |
+| 124 | CSDN：Claude Code 封神指南（2026 必装十大 Skills） | Skills 推荐、中文平台博客自动化适配 | 中低 | https://blog.csdn.net/qq_73472828/article/details/160794286 |
+| 125 | CSDN：Claude Code 完整使用教程（2026 最新版） | 入门、配置、模式 | 中低 | https://blog.csdn.net/sanchan/article/details/160063941 |
+| 126 | CSDN：标准化前端 UI SKILL — Frontend Design | 前端 skill 复用模板 | 中低 | https://blog.csdn.net/qq_17859117/article/details/161060257 |
+| 127 | cnblogs：Claude Code 进阶指南（Liuq-24） | 模式切换、上下文管理、提示词对比、git diff commit | 中低 | https://www.cnblogs.com/Liuq-24/p/19989949 |
+| 128 | GitCode/CSDN：2026 Claude Code 全功能实战手册 | DataEyes 接入、工作流 | 中低 | https://gitcode.csdn.net/69d458af54b52172bc6769e9.html |
+| 129 | GitCode/CSDN：Claude Code 2026 最新进阶玩法（含 Skills 详解） | Skills + 国产模型路径 | 中低 | https://gitcode.csdn.net/6a0174d5de083e055f42292c.html |
+| 130 | Claude Code Router (CCR) | 路由 Claude Code 请求到智谱 / Kimi / ModelScope 等 OpenAI 兼容接口 | 中 | https://github.com/musistudio/claude-code-router |
+| 131 | cc-switch / CCSwitch | 多 provider 配置切换 | 中 | https://github.com/farion1231/cc-switch |
+| 132 | claudefa.st changelog 中文整理 | release notes 中英对照 | 中低 | https://claudefa.st/blog/guide/changelog |
+| 133 | ClaudeLog Changelog | 第三方版本追踪 | 中低 | https://claudelog.com/claude-code-changelog/ |
+
+补充说明：
+
+- 网上流传的“2026-05 Code w/ Claude 开发者大会新命令”（如 `/voice`、`/computer-use`、`/remote-control`、`/fork`、`/team create`）大多来自二次整理文，截至 2026-05-21 在官方 commands reference 中无对应条目，本指南不作为已发布功能写入。
+- 中文社区文章请按第 7 节可信度分层使用：CSDN/GitCode 个人长文偏“中低”，仅作工作流灵感；事实层面回到官方 docs。
+

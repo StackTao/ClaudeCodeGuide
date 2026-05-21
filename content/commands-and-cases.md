@@ -1,7 +1,7 @@
 # Claude Code 命令详解与实战案例手册
 
-> 版本：2026-05-20  
-> 说明：Claude Code 命令变化很快，本文按 2026-05-20 可检索到的官方文档和公开社区资料整理。实际使用时以 `claude --help`、`/help`、官方 CLI reference、Commands 页面为准。
+> 版本：2026-05-21  
+> 说明：Claude Code 命令变化很快，本文按 2026-05-21 可检索到的官方文档和公开社区资料整理（覆盖到 v2.1.145 release notes）。实际使用时以 `claude --help`、`/help`、官方 CLI reference、Commands 页面为准。
 
 ## 1. 使用命令前的基本判断
 
@@ -528,6 +528,7 @@ claude -p "Analyze this repository and output a risk report" --max-budget-usd 5.
 - 日常实现用 Sonnet。
 - 复杂架构判断、深度调试时临时切 Opus。
 - 切换模型会让后续响应重新读上下文，长会话可能有成本影响。
+- v2.1.144 起 `/model` 默认仅作用于当前会话；在模型选择器里按 `d` 才把所选模型设为后续新会话的默认值。这意味着临时切 Opus 不会污染团队成员或其他项目的默认。
 
 ### 4.7 `/effort`
 
@@ -729,6 +730,7 @@ X 上有用户反馈图片维度/多图上下文问题时提示使用 `/compact`
 - 团队评估 Claude Code 使用成本。
 - 判断是否应该拆任务或清上下文。
 
+补充：自 v2.1.144 起 `/extra-usage` 被重命名为 `/usage-credits`（旧名仍兼容，但官方文档已切换）。它专门用于查看“额外用量 / 信用”相关账务，与单次会话 `/usage` 互补。
 ### 4.14 `/mcp`
 
 用途：管理 MCP 连接和认证。
@@ -1797,3 +1799,71 @@ Claude Code SDK 适合把 Claude Code 的 agent harness 用在程序化场景中
 ```
 
 `/ultraplan` 则适合在大改造前先做深度计划。它不是让 Claude 替你决定产品方向，而是把工程风险、分阶段策略、测试和回滚方案写清楚。
+
+### 12.6 Worktree + Subagent：并行而不冲突
+
+自 v2.1.50 起，Claude Code 把 git worktree 提升为一等公民，并与 subagent 隔离机制打通。最常见的三种用法：
+
+**会话级 worktree。** 用 `--worktree`（或 `-w`）启动 Claude 时，会在 `.claude/worktrees/<name>/` 下新建一个 worktree 和同名分支，把这次会话彻底锁在那份独立工作树里：
+
+```bash
+claude --worktree fix-login
+claude -w refactor-billing
+```
+
+默认基线是 `origin/HEAD`（要求 fetch 成功），保证从远端干净起点切出；如果希望基于本地未推送的工作 HEAD，设置 `worktree.baseRef: "head"`。还可以从 PR 直接开 worktree：
+
+```bash
+claude -w "#1234"
+claude -w https://github.com/org/repo/pull/1234
+```
+
+Claude Code 会 fetch `pull/<n>/head` 并落到 `.claude/worktrees/pr-<n>/`。
+
+**Subagent 级 worktree。** 在自定义 subagent frontmatter 里加 `isolation: worktree`：
+
+```yaml
+---
+name: feature-builder
+tools: [Read, Edit, Bash]
+isolation: worktree
+model: sonnet
+---
+```
+
+每次调用这个 subagent 都会拿到独立 worktree，跑完无改动会自动清理，有改动则保留路径和分支让你 review/merge。两个 `feature-builder` 同时跑也不会互相覆盖。
+
+**非 Git VCS。** Mercurial/Perforce/SVN 团队可以配置 `WorktreeCreate` / `WorktreeRemove` hooks 替换默认 git 逻辑，`--worktree` 和会话内的 worktree 请求会改走 hook。
+
+实战要点：
+
+- 多 agent 同时改文件就用 worktree，无例外，setup 成本几秒，撞车成本是数小时。
+- 把 worktree 清理纳入日常流程：每周 `git worktree prune` 一次，配合 hook 提醒空闲目录。
+- 启动并行前花 30 秒检查共享依赖（config、migration、shared util），避免“看起来独立其实串联”的任务。
+- subagent 不能再起 subagent；多层编排用 Agent Teams（实验功能，需 `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`）或回到主会话调度。
+
+来源：官方 [Run parallel sessions with worktrees](https://code.claude.com/docs/en/worktrees)、Claude Directory worktree 指南、social-thread 实战观察。
+
+### 12.7 `/radio`：长会话背景声
+
+2026-05-08 起 `/radio` 成为内置命令，会在浏览器打开 Anthropic 自家的 Claude FM lo-fi 频道，用于陪伴长任务。社区里另有一个 `claude-music` 插件（Kenneth Leung），通过第三方 marketplace 安装，命令 `/play`、`/vibe`，支持 lofi/jazz/ambient/synthwave，自动在 mpv、ffplay、afplay 间选播放器，依赖 SomaFM 与 YouTube live 流。
+
+注意区分：
+
+- `/radio` 是官方命令，无需安装。
+- `/play`、`/vibe` 来自第三方插件，需自行 vet 来源与依赖。
+
+### 12.8 国产模型与多 Provider 切换
+
+中文社区的常见诉求是用 Claude Code 的 harness 接智谱、Kimi、ModelScope 等模型，主要走两条路：
+
+| 工具 | 角色 | 链接 |
+|---|---|---|
+| Claude Code Router (CCR) | 中间层 proxy，把 Claude Code 的请求路由到 OpenAI 兼容接口的国产模型 | 见 LinuxDO / V2EX 相关讨论 |
+| CCSwitch / cc-switch | 多 provider/账号配置切换器，支持快速换 `ANTHROPIC_BASE_URL` 与凭据 | 见 LinuxDO `cc-switch` 主题 |
+
+注意事项：
+
+- 国产模型不一定支持 Claude 的 tool use schema、prompt cache、thinking、computer use 等特性，CCR 通常只能覆盖最基础的对话和工具调用。
+- 切换 provider 后 plugin、skills 的触发表现会变（参考 LinuxDO `superpowers 和 cc-switch` 主题）。
+- 公司项目仍建议优先用官方 API；本地实验可用 CCR + 国产模型节省成本。
