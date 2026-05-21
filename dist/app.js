@@ -1,5 +1,5 @@
 const SITE_CONFIG = {
-  title: "Claude Code 中文实践文档",
+  title: "Claude Code 中文技巧与工具共建知识库",
   githubRepo: "StackTao/ClaudeCodeGuide",
   githubBranch: "main",
   githubPages: "https://stacktao.github.io/ClaudeCodeGuide/",
@@ -8,23 +8,23 @@ const SITE_CONFIG = {
 const DOC_LABELS = {
   guide: {
     title: "主指南",
-    description: "Claude Code 从入门到实战的书籍式文档",
+    description: "社区共建的 Claude Code 使用技巧、工具和实战工作流",
   },
   commands: {
     title: "命令与案例",
-    description: "CLI、Slash 命令、Goal、Hooks、MCP 和端到端案例",
+    description: "CLI、Slash 命令、Goal、Hooks、MCP 和真实案例",
   },
   skills: {
     title: "Skills 与插件",
-    description: "Superpowers、GSD、Codex plugin、MCP 与社区实践",
+    description: "Superpowers、Skills、插件、MCP 与社区工具清单",
   },
   examples: {
     title: "模板附录",
-    description: "AGENTS.md、Review、CI、Hook、Skill 模板",
+    description: "可复制的 Prompt、AGENTS.md、Review、CI 和 Hook 模板",
   },
   sources: {
     title: "来源索引",
-    description: "官方、GitHub、X、LinuxDO、Reddit 等资料统计",
+    description: "官方、GitHub、X、LinuxDO、Reddit 与社区来源",
   },
 };
 
