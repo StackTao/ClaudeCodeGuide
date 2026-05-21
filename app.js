@@ -427,20 +427,32 @@ function updateGithubLinks() {
   const doc = currentDoc();
   const section = currentSection();
   const branch = state.githubBranch || SITE_CONFIG.githubBranch;
-  byId("githubTopLink").href = githubUrl("");
-  byId("githubRepoLink").href = githubUrl("");
-  byId("githubSidebarLink").href = githubUrl("");
-  byId("githubPagesLink").href = SITE_CONFIG.githubPages;
-  byId("githubActionsLink").href = githubUrl("/actions/workflows/pages.yml");
-  byId("githubEditLink").href = githubUrl(`/edit/${branch}/${doc.file}`);
-  byId("githubEditLink").title = `编辑 ${doc.file} / ${section.title}`;
-  byId("githubHistoryLink").href = githubUrl(`/commits/${branch}/${doc.file}`);
-  byId("githubHistoryLink").title = `查看 ${doc.file} 的提交历史`;
+  const githubTopLink = byId("githubTopLink");
+  const githubSidebarLink = byId("githubSidebarLink");
+  const githubRepoLink = byId("githubRepoLink");
+  const githubPagesLink = byId("githubPagesLink");
+  const githubActionsLink = byId("githubActionsLink");
+  const githubEditLink = byId("githubEditLink");
+  const githubHistoryLink = byId("githubHistoryLink");
+
+  if (githubTopLink) githubTopLink.href = githubUrl("");
+  if (githubSidebarLink) githubSidebarLink.href = githubUrl("");
+  if (githubRepoLink) githubRepoLink.href = githubUrl("");
+  if (githubPagesLink) githubPagesLink.href = SITE_CONFIG.githubPages;
+  if (githubActionsLink) githubActionsLink.href = githubUrl("/actions/workflows/pages.yml");
+  if (githubEditLink) {
+    githubEditLink.href = githubUrl(`/edit/${branch}/${doc.file}`);
+    githubEditLink.title = `编辑 ${doc.file} / ${section.title}`;
+  }
+  if (githubHistoryLink) {
+    githubHistoryLink.href = githubUrl(`/commits/${branch}/${doc.file}`);
+    githubHistoryLink.title = `查看 ${doc.file} 的提交历史`;
+  }
 }
 
 async function loadGithubStatus() {
   const status = byId("githubStatusText");
-  status.textContent = "正在检查远端更新...";
+  if (status) status.textContent = "正在检查远端更新...";
   try {
     const repoResponse = await fetch(`https://api.github.com/repos/${SITE_CONFIG.githubRepo}`, {
       headers: { Accept: "application/vnd.github+json" },
@@ -460,9 +472,9 @@ async function loadGithubStatus() {
     const sha = data.sha.slice(0, 7);
     const date = new Date(data.commit.committer.date).toLocaleString("zh-CN");
     const message = data.commit.message.split("\n")[0];
-    status.textContent = `${branch} @ ${sha} · ${date} · ${message}`;
+    if (status) status.textContent = `${branch} @ ${sha} · ${date} · ${message}`;
   } catch (error) {
-    status.textContent = `无法读取实时状态，可直接打开仓库查看：${error.message}`;
+    if (status) status.textContent = `无法读取实时状态，可直接打开仓库查看：${error.message}`;
     setText("githubPagesText", `线上站点地址：${SITE_CONFIG.githubPages}`);
   }
 }
@@ -606,7 +618,7 @@ function bindEvents() {
   byId("themeButton").addEventListener("click", () => {
     applyTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark");
   });
-  byId("refreshGithub").addEventListener("click", loadGithubStatus);
+  byId("refreshGithub")?.addEventListener("click", loadGithubStatus);
   byId("searchInput").addEventListener("input", (event) => searchDocs(event.target.value));
   byId("searchResults").addEventListener("click", (event) => {
     const item = event.target.closest("[data-section]");
