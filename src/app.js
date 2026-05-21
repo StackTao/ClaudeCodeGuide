@@ -71,6 +71,14 @@ const inlineMarkdown = (text) => {
   return html;
 };
 
+function highlightText(text, query) {
+  const escaped = escapeHtml(text);
+  const normalized = query.trim();
+  if (!normalized) return escaped;
+  const safeQuery = normalized.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return escaped.replace(new RegExp(safeQuery, "gi"), (match) => `<mark>${match}</mark>`);
+}
+
 function renderMarkdown(markdown) {
   const lines = markdown.replace(/\r\n/g, "\n").split("\n");
   const html = [];
@@ -549,18 +557,24 @@ function searchDocs(query) {
 
   panel.hidden = false;
   panel.innerHTML = results.length
-    ? results
-        .slice(0, 12)
-        .map(
-          ({ doc, section, excerpt }) => `
+    ? `
+        <div class="search-results-head">
+          <span>搜索结果</span>
+          <strong>${results.length}</strong>
+        </div>
+        ${results
+          .slice(0, 8)
+          .map(
+            ({ doc, section, excerpt }) => `
             <div class="result-item" data-doc="${doc.slug}" data-section="${section.slug}">
               <strong>${escapeHtml(doc.title)} / ${escapeHtml(section.title.replace(/`/g, ""))}</strong>
-              <p>${escapeHtml(excerpt)}</p>
+              <p>${highlightText(excerpt, query)}</p>
             </div>
           `,
-        )
-        .join("")
-    : `<p>没有找到匹配内容。</p>`;
+          )
+          .join("")}
+      `
+    : `<div class="search-empty"><strong>没有找到匹配内容</strong><span>可以试试命令名、插件名、MCP、Superpowers、Goal。</span></div>`;
 }
 
 function bindEvents() {
@@ -575,6 +589,16 @@ function bindEvents() {
   });
   byId("refreshGithub")?.addEventListener("click", loadGithubStatus);
   byId("searchInput").addEventListener("input", (event) => searchDocs(event.target.value));
+  byId("searchInput").addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      byId("searchInput").value = "";
+      byId("searchResults").hidden = true;
+      byId("searchInput").blur();
+    }
+  });
+  document.addEventListener("click", (event) => {
+    if (!event.target.closest(".search")) byId("searchResults").hidden = true;
+  });
   byId("searchResults").addEventListener("click", (event) => {
     const item = event.target.closest("[data-section]");
     if (item) navigate(item.dataset.doc, item.dataset.section);
