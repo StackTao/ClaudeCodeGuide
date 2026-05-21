@@ -1,0 +1,12 @@
+{
+  "name": "claude-code-guide-site",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Static Claude Code Chinese guide site",
+  "scripts": {
+    "build": "node build-site.js",
+    "dev": "node server.js",
+    "start": "node server.js",
+    "check": "node -c app.js && node -c build-site.js && node -c server.js"
+  }
+}
