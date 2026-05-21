@@ -81,39 +81,41 @@
               </div>
 
               <div class="feedback-layout">
-                <form class="feedback-form feedback-panel active" id="feedbackForm" data-feedback-panel="github">
-                  <label>
-                    反馈类型
-                    <select id="feedbackType">
-                      <option value="事实错误">事实错误</option>
-                      <option value="缺少来源">缺少来源</option>
-                      <option value="补充案例">补充案例</option>
-                      <option value="样式或交互问题">样式或交互问题</option>
-                    </select>
-                  </label>
-                  <label>
-                    问题 / 修改建议
-                    <textarea
-                      id="commentBody"
-                      rows="6"
-                      placeholder="指出哪一句有误、缺少哪个来源、建议如何改。提交后会生成 GitHub Issue 草稿。"
-                      required
-                    ></textarea>
-                  </label>
-                  <div class="feedback-actions">
-                    <button class="primary-button" type="submit">打开 GitHub Issue</button>
-                    <button class="secondary-button" id="copyIssue" type="button">复制修改请求</button>
-                    <a class="secondary-button" id="openIssue" target="_blank" rel="noreferrer">打开 Issue 草稿</a>
-                    <a class="secondary-button" id="searchIssues" target="_blank" rel="noreferrer">查看相关反馈</a>
-                  </div>
-                </form>
+                <div class="feedback-main">
+                  <form class="feedback-form feedback-panel active" id="feedbackForm" data-feedback-panel="github">
+                    <label>
+                      反馈类型
+                      <select id="feedbackType">
+                        <option value="事实错误">事实错误</option>
+                        <option value="缺少来源">缺少来源</option>
+                        <option value="补充案例">补充案例</option>
+                        <option value="样式或交互问题">样式或交互问题</option>
+                      </select>
+                    </label>
+                    <label>
+                      问题 / 修改建议
+                      <textarea
+                        id="commentBody"
+                        rows="6"
+                        placeholder="指出哪一句有误、缺少哪个来源、建议如何改。提交后会生成 GitHub Issue 草稿。"
+                        required
+                      ></textarea>
+                    </label>
+                    <div class="feedback-actions">
+                      <button class="primary-button" type="submit">打开 GitHub Issue</button>
+                      <button class="secondary-button" id="copyIssue" type="button">复制修改请求</button>
+                      <a class="secondary-button" id="openIssue" target="_blank" rel="noreferrer">打开 Issue 草稿</a>
+                      <a class="secondary-button" id="searchIssues" target="_blank" rel="noreferrer">查看相关反馈</a>
+                    </div>
+                  </form>
 
-                <div class="feedback-panel local-drafts" data-feedback-panel="draft">
-                  <div class="draft-actions">
-                    <button class="secondary-button" id="saveDraft" type="button">保存为本地草稿</button>
-                    <button class="text-button" id="clearComments" type="button">清空本节草稿</button>
+                  <div class="feedback-panel local-drafts" data-feedback-panel="draft">
+                    <div class="draft-actions">
+                      <button class="secondary-button" id="saveDraft" type="button">保存为本地草稿</button>
+                      <button class="text-button" id="clearComments" type="button">清空本节草稿</button>
+                    </div>
+                    <div id="commentsList" class="comments-list"></div>
                   </div>
-                  <div id="commentsList" class="comments-list"></div>
                 </div>
 
                 <div class="update-card">

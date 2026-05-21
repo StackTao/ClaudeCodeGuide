@@ -759,6 +759,11 @@ textarea {
   grid-template-columns: minmax(0, 1fr) 260px;
   gap: 16px;
   margin-top: 16px;
+  align-items: start;
+}
+
+.feedback-main {
+  min-width: 0;
 }
 
 .feedback-panel {
@@ -766,12 +771,13 @@ textarea {
 }
 
 .feedback-panel.active {
-  display: grid;
+  display: block;
 }
 
 .feedback-form {
   display: grid;
   gap: 12px;
+  min-width: 0;
 }
 
 .feedback-form label {
@@ -806,11 +812,16 @@ textarea {
   gap: 9px;
 }
 
+.feedback-actions > * {
+  flex: 0 1 auto;
+}
+
 .update-card {
   border: 1px solid var(--line);
   background: color-mix(in srgb, var(--surface-muted) 72%, var(--surface));
   border-radius: var(--radius);
   padding: 15px;
+  min-width: 0;
 }
 
 .update-card ol {
@@ -827,6 +838,7 @@ textarea {
   border-radius: var(--radius);
   background: var(--surface);
   padding: 14px;
+  min-width: 0;
 }
 
 .draft-actions {
@@ -991,6 +1003,11 @@ textarea {
   .draft-actions {
     grid-template-columns: 1fr;
     display: grid;
+  }
+
+  .feedback-actions > *,
+  .feedback-heading .secondary-button {
+    width: 100%;
   }
 
   .feedback-tabs {
