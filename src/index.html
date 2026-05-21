@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Claude Code Guide｜中文技巧与工具共建知识库</title>
+    <meta
+      name="description"
+      content="Claude Code 中文社区共建知识库：分享真实使用技巧、命令案例、插件、Skills、MCP、工作流和工具实践。"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="sidebar" id="sidebar">
+        <div class="brand">
+          <div class="brand-mark">CC</div>
+          <div>
+            <strong>Claude Code Guide</strong>
+            <span>技巧、工具与实战经验共建</span>
+          </div>
+        </div>
+        <div class="repo-card">
+          <a id="githubSidebarLink" target="_blank" rel="noreferrer">StackTao/ClaudeCodeGuide</a>
+          <span>欢迎提交你的技巧、工具和案例</span>
+        </div>
+        <nav class="doc-nav" id="docNav" aria-label="文档"></nav>
+      </aside>
+
+      <main class="main">
+        <header class="topbar">
+          <div class="topbar-inner">
+            <button class="icon-button menu-button" id="menuButton" type="button" aria-label="打开目录">
+              <span></span>
+              <span></span>
+              <span></span>
+            </button>
+            <label class="search">
+              <span>搜索</span>
+              <input id="searchInput" type="search" placeholder="命令、插件、Superpowers、MCP..." />
+            </label>
+            <button class="icon-button theme-button" id="themeButton" type="button" aria-label="切换深色模式">◐</button>
+            <a class="secondary-button top-github" id="githubTopLink" target="_blank" rel="noreferrer">GitHub 仓库</a>
+            <a class="top-link" id="issueTopLink" target="_blank" rel="noreferrer">提出修改</a>
+          </div>
+        </header>
+
+        <div class="content-grid">
+          <article class="document">
+            <div class="doc-meta" id="docMeta"></div>
+            <div id="searchResults" class="search-results" hidden></div>
+            <div id="articleContent" class="article-content"></div>
+
+            <section class="feedback" id="feedback">
+              <div class="feedback-heading">
+                <div>
+                  <p class="eyebrow">反馈与修正</p>
+                  <h2>本节有错误、缺资料或想补案例？</h2>
+                  <p>提交到 GitHub Issue，方便公开跟踪、讨论和修正。</p>
+                </div>
+                <button class="secondary-button" id="copyPageLink" type="button">复制本页引用</button>
+              </div>
+
+              <div class="feedback-card">
+                <div class="feedback-main">
+                  <form class="feedback-form" id="feedbackForm">
+                    <div class="feedback-row">
+                      <label>
+                        反馈类型
+                        <select id="feedbackType">
+                          <option value="事实错误">事实错误</option>
+                          <option value="缺少来源">缺少来源</option>
+                          <option value="补充案例">补充案例</option>
+                          <option value="样式或交互问题">样式或交互问题</option>
+                        </select>
+                      </label>
+                      <div class="feedback-note">优先提交可复现、可定位、带来源的修改建议。</div>
+                    </div>
+                    <label>
+                      问题 / 修改建议
+                      <textarea
+                        id="commentBody"
+                        rows="6"
+                        placeholder="指出哪一句有误、缺少哪个来源、建议如何改。提交后会生成 GitHub Issue 草稿。"
+                        required
+                      ></textarea>
+                    </label>
+                    <div class="feedback-actions">
+                      <button class="primary-button" type="submit">打开 GitHub Issue</button>
+                      <a class="secondary-button" id="openIssue" target="_blank" rel="noreferrer">预览 Issue 草稿</a>
+                      <button class="text-button" id="copyIssue" type="button">复制修改请求</button>
+                      <a class="text-button" id="searchIssues" target="_blank" rel="noreferrer">查看相关反馈</a>
+                    </div>
+                  </form>
+
+                  <div class="issue-list">
+                    <div class="comments-title">
+                      <h3>GitHub 相关反馈</h3>
+                      <button class="text-button" id="refreshIssues" type="button">刷新</button>
+                    </div>
+                    <div id="issueList" class="issue-list-body"></div>
+                  </div>
+                </div>
+
+                <p class="feedback-footnote">维护原则：官方事实优先；社区经验需交叉验证；修改后运行 <code>npm run build</code> 和 <code>npm run check</code>。</p>
+              </div>
+            </section>
+          </article>
+
+          <aside class="toc" id="toc" aria-label="本页目录"></aside>
+        </div>
+      </main>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script src="docs-data.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

@@ -4,9 +4,9 @@
   "private": true,
   "description": "Static Claude Code Chinese guide site",
   "scripts": {
-    "build": "node build-site.js",
-    "dev": "node server.js",
-    "start": "node server.js",
-    "check": "node -c app.js && node -c build-site.js && node -c server.js"
+    "build": "node scripts/build-site.js",
+    "dev": "node scripts/server.js",
+    "start": "node scripts/server.js",
+    "check": "node -c src/app.js && node -c scripts/build-site.js && node -c scripts/server.js"
   }
 }

@@ -35,10 +35,8 @@ jobs:
       - name: Prepare static artifact
         shell: bash
         run: |
-          mkdir -p _site
-          cp index.html app.js styles.css docs-data.js package.json README.md _site/
-          cp .nojekyll _site/
-          cp index.html _site/404.html
+          test -f dist/index.html
+          test -f dist/docs-data.js
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
@@ -46,7 +44,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: _site
+          path: dist
 
       - name: Deploy to GitHub Pages
         id: deployment
