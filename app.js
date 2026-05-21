@@ -320,7 +320,6 @@ function renderDoc(docSlug, sectionSlug) {
   `;
   byId("articleContent").innerHTML = renderMarkdown(sectionBody(section));
   renderToc();
-  renderComments();
   renderIssues();
   document.querySelectorAll(".nav-group").forEach((item) => item.classList.toggle("open", item.dataset.group === doc.slug));
   document.querySelectorAll(".nav-item").forEach((item) => item.classList.toggle("active", item.dataset.doc === doc.slug));
@@ -491,38 +490,6 @@ function showToast(message) {
   setTimeout(() => toast.classList.remove("show"), 1800);
 }
 
-function commentKey() {
-  return `cc-guide-comments:${state.currentDocSlug}:${state.currentSectionSlug}`;
-}
-
-function getComments() {
-  try {
-    return JSON.parse(localStorage.getItem(commentKey()) || "[]");
-  } catch {
-    return [];
-  }
-}
-
-function saveComments(comments) {
-  localStorage.setItem(commentKey(), JSON.stringify(comments));
-}
-
-function renderComments() {
-  const comments = getComments();
-  byId("commentsList").innerHTML = comments.length
-    ? comments
-        .map(
-          (comment) => `
-          <div class="comment">
-            <header><strong>${escapeHtml(comment.name || "匿名用户")}</strong><span>${escapeHtml(comment.time)}</span></header>
-            <div>${inlineMarkdown(comment.body).replace(/\n/g, "<br />")}</div>
-          </div>
-        `,
-        )
-        .join("")
-    : `<p class="empty">还没有本地草稿。草稿只保存在你的浏览器中，不会同步给其他读者。</p>`;
-}
-
 function issueSearchQuery() {
   const doc = currentDoc();
   const section = currentSection();
@@ -556,18 +523,6 @@ async function renderIssues() {
     const fallback = byId("searchIssues")?.href || githubUrl("/issues");
     list.innerHTML = `<p class="empty">无法读取 GitHub Issue：${escapeHtml(error.message)}。<a href="${fallback}" target="_blank" rel="noreferrer">打开 GitHub 搜索</a></p>`;
   }
-}
-
-function switchFeedbackTab(tabName) {
-  document.querySelectorAll("[data-feedback-tab]").forEach((button) => {
-    button.classList.toggle("active", button.dataset.feedbackTab === tabName);
-    button.setAttribute("aria-selected", String(button.dataset.feedbackTab === tabName));
-  });
-  document.querySelectorAll("[data-feedback-panel]").forEach((panel) => {
-    const active = panel.dataset.feedbackPanel === tabName;
-    panel.classList.toggle("active", active);
-    panel.hidden = !active;
-  });
 }
 
 function searchDocs(query) {
@@ -636,35 +591,11 @@ function bindEvents() {
     window.open(byId("openIssue").href, "_blank", "noopener,noreferrer");
   });
 
-  byId("saveDraft").addEventListener("click", () => {
-    const body = byId("commentBody").value.trim();
-    if (!body) return;
-    const comments = getComments();
-    comments.unshift({
-      name: byId("feedbackType").value,
-      body,
-      time: new Date().toLocaleString(),
-    });
-    saveComments(comments);
-    renderComments();
-    updateIssueLinks();
-    switchFeedbackTab("draft");
-    showToast("已保存为本地草稿");
-  });
-
-  document.querySelectorAll("[data-feedback-tab]").forEach((button) => {
-    button.addEventListener("click", () => switchFeedbackTab(button.dataset.feedbackTab));
-  });
   byId("feedbackType").addEventListener("change", updateIssueLinks);
   byId("commentBody").addEventListener("input", updateIssueLinks);
   byId("copyIssue").addEventListener("click", () => copyText(buildIssueBody()));
   byId("copyPageLink").addEventListener("click", () => copyText(`${currentDoc().title} / ${currentSection().title}\n${location.href}`));
   byId("refreshIssues").addEventListener("click", renderIssues);
-  byId("clearComments").addEventListener("click", () => {
-    saveComments([]);
-    renderComments();
-    showToast("已清空本节草稿");
-  });
 }
 
 applyTheme();
