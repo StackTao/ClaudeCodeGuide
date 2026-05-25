@@ -250,6 +250,16 @@ function setText(id, text) {
   if (element) element.textContent = text;
 }
 
+const cleanTitle = (text) => String(text || "").replace(/`/g, "");
+
+function sourcePathFor(doc, section) {
+  return section?.sourceFile || doc?.file || "";
+}
+
+function sourceLabel(sourceFile) {
+  return String(sourceFile || "").replace(/^content\//, "");
+}
+
 function renderNav() {
   byId("docNav").innerHTML = window.DOCS.map(
     (rawDoc) => {
@@ -258,7 +268,7 @@ function renderNav() {
         .map(
           (section) => `
             <button class="section-item" data-doc="${doc.slug}" data-section="${section.slug}" type="button">
-              ${escapeHtml(section.title.replace(/`/g, ""))}
+              <span class="section-title">${escapeHtml(cleanTitle(section.title))}</span>
             </button>
           `,
         )
@@ -296,7 +306,7 @@ function renderToc() {
     .filter((heading) => heading.level >= 2 && heading.level <= 3)
     .map(
       (heading) =>
-        `<button class="toc-h${heading.level}" data-heading="${escapeHtml(heading.id)}" type="button">${escapeHtml(heading.text.replace(/`/g, ""))}</button>`,
+        `<button class="toc-h${heading.level}" data-heading="${escapeHtml(heading.id)}" type="button">${escapeHtml(cleanTitle(heading.text))}</button>`,
     )
     .join("");
   byId("toc").innerHTML = `<div class="toc-title">本页目录</div>${tocItems}`;
@@ -313,16 +323,21 @@ function sectionBody(section) {
 function renderDoc(docSlug, sectionSlug) {
   const doc = displayDoc(docBySlug(docSlug));
   const section = sectionBySlug(doc, sectionSlug);
+  const sourceFile = sourcePathFor(doc, section);
   state.currentDocSlug = doc.slug;
   state.currentSectionSlug = section.slug;
   document.title = `${section.title} - ${doc.title} - ${SITE_CONFIG.title}`;
   byId("docMeta").innerHTML = `
-    <div class="breadcrumb">${escapeHtml(doc.title)} / ${escapeHtml(section.title.replace(/`/g, ""))}</div>
-    <h1>${escapeHtml(section.title.replace(/`/g, ""))}</h1>
+    <div class="breadcrumb">
+      <span>${escapeHtml(doc.title)} / ${escapeHtml(cleanTitle(section.title))}</span>
+      <code>${escapeHtml(sourceLabel(sourceFile))}</code>
+    </div>
+    <h1>${escapeHtml(cleanTitle(section.title))}</h1>
     <p>${escapeHtml(doc.description)}</p>
     <div class="section-progress">
       <span>第 ${(doc.sections || []).findIndex((item) => item.slug === section.slug) + 1} / ${(doc.sections || []).length} 节</span>
       <span>最后构建：${escapeHtml(new Date(doc.updatedAt).toLocaleDateString())}</span>
+      <span>来源文件：${escapeHtml(sourceLabel(sourceFile))}</span>
       <span>来源可信度：分层标注</span>
     </div>
   `;
@@ -349,12 +364,12 @@ function renderPager(doc, section) {
   pager.innerHTML = `
     ${
       previous
-        ? `<button class="pager-card" data-doc="${doc.slug}" data-section="${previous.slug}" type="button"><span>上一节</span><strong>${escapeHtml(previous.title.replace(/`/g, ""))}</strong></button>`
+        ? `<button class="pager-card" data-doc="${doc.slug}" data-section="${previous.slug}" type="button"><span>上一节</span><strong>${escapeHtml(cleanTitle(previous.title))}</strong></button>`
         : `<span></span>`
     }
     ${
       next
-        ? `<button class="pager-card next" data-doc="${doc.slug}" data-section="${next.slug}" type="button"><span>下一节</span><strong>${escapeHtml(next.title.replace(/`/g, ""))}</strong></button>`
+        ? `<button class="pager-card next" data-doc="${doc.slug}" data-section="${next.slug}" type="button"><span>下一节</span><strong>${escapeHtml(cleanTitle(next.title))}</strong></button>`
         : `<span></span>`
     }
   `;
@@ -391,6 +406,7 @@ function currentSection() {
 function buildIssueBody() {
   const doc = currentDoc();
   const section = currentSection();
+  const sourceFile = sourcePathFor(doc, section);
   const feedbackType = byId("feedbackType")?.value || "文档反馈";
   const body = byId("commentBody").value.trim() || "请在这里描述发现的错误、建议修改内容和参考来源。";
   return [
@@ -400,7 +416,7 @@ function buildIssueBody() {
     `## 文档位置`,
     `- 页面：${doc.title}`,
     `- 章节：${section.title}`,
-    `- 文件：${doc.file}`,
+    `- 文件：${sourceFile}`,
     `- 页面链接：${location.href}`,
     `- 章节标识：${doc.slug}/${section.slug}`,
     "",
@@ -433,6 +449,7 @@ function updateIssueLinks() {
 function updateGithubLinks() {
   const doc = currentDoc();
   const section = currentSection();
+  const sourceFile = sourcePathFor(doc, section);
   const branch = state.githubBranch || SITE_CONFIG.githubBranch;
   const githubTopLink = byId("githubTopLink");
   const githubSidebarLink = byId("githubSidebarLink");
@@ -448,12 +465,12 @@ function updateGithubLinks() {
   if (githubPagesLink) githubPagesLink.href = SITE_CONFIG.githubPages;
   if (githubActionsLink) githubActionsLink.href = githubUrl("/actions/workflows/pages.yml");
   if (githubEditLink) {
-    githubEditLink.href = githubUrl(`/edit/${branch}/${doc.file}`);
-    githubEditLink.title = `编辑 ${doc.file} / ${section.title}`;
+    githubEditLink.href = githubUrl(`/edit/${branch}/${sourceFile}`);
+    githubEditLink.title = `编辑 ${sourceFile} / ${section.title}`;
   }
   if (githubHistoryLink) {
-    githubHistoryLink.href = githubUrl(`/commits/${branch}/${doc.file}`);
-    githubHistoryLink.title = `查看 ${doc.file} 的提交历史`;
+    githubHistoryLink.href = githubUrl(`/commits/${branch}/${sourceFile}`);
+    githubHistoryLink.title = `查看 ${sourceFile} 的提交历史`;
   }
 }
 
@@ -567,7 +584,8 @@ function searchDocs(query) {
           .map(
             ({ doc, section, excerpt }) => `
             <div class="result-item" data-doc="${doc.slug}" data-section="${section.slug}">
-              <strong>${escapeHtml(doc.title)} / ${escapeHtml(section.title.replace(/`/g, ""))}</strong>
+              <strong>${escapeHtml(doc.title)} / ${escapeHtml(cleanTitle(section.title))}</strong>
+              <span class="result-source">${escapeHtml(sourceLabel(sourcePathFor(doc, section)))}</span>
               <p>${highlightText(excerpt, query)}</p>
             </div>
           `,

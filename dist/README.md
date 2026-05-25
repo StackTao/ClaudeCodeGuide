@@ -50,13 +50,15 @@ http://127.0.0.1:4173/
 
 ## 更新内容
 
-修改这些 Markdown 文件：
+内容已经按主题拆成多个章节文件。修改对应目录下的 Markdown：
 
-- `content/claude-code-guide.md`
-- `content/commands-and-cases.md`
-- `content/skills-and-plugins.md`
-- `content/examples.md`
-- `content/sources.md`
+- `content/guide/`：主指南
+- `content/commands/`：命令、Hooks、MCP 和案例
+- `content/skills/`：Skills、插件和增强工作流
+- `content/examples/`：可复制模板
+- `content/sources/`：来源索引和可信度说明
+
+章节文件使用数字前缀排序，例如 `00-overview.md`、`01-intro.md`。新增章节时请沿用这种命名方式，并尽量保留已有标题，避免旧链接失效。
 
 然后重新生成网站数据：
 
@@ -77,14 +79,19 @@ npm.cmd run build
 ## 项目结构
 
 ```text
-content/                 Markdown 原始文档
+content/                 Markdown 原始文档，按主题目录拆分
+  guide/                 主指南章节
+  commands/              命令和案例章节
+  skills/                Skills、插件和工作流章节
+  examples/              模板章节
+  sources/               来源索引章节
 src/                     静态站前端源码
 scripts/                 构建脚本和本地服务
 dist/                    构建输出，GitHub Pages 发布此目录
 .github/workflows/       GitHub Pages 自动部署
 ```
 
-一般只需要改 `content/` 和 `src/`。不要手动修改 `dist/docs-data.js`，它由 `npm run build` 生成。
+一般只需要改 `content/` 和 `src/`。不要手动修改 `dist/` 或 `dist/docs-data.js`，它们由 `npm run build` 生成。
 
 ## 如何参与共建
 
@@ -92,7 +99,7 @@ dist/                    构建输出，GitHub Pages 发布此目录
 
 如果你想直接改文档：
 
-1. 修改 `content/` 里的 Markdown。
+1. 修改 `content/` 对应主题目录里的 Markdown。
 2. 运行 `npm.cmd run build`。
 3. 运行 `npm.cmd run check`。
 4. 提交 PR 或推送到仓库。
