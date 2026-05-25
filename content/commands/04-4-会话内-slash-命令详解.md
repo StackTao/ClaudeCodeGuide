@@ -14,6 +14,7 @@
 
 - 命令变化快，先看 `/help`。
 - 不同平台、计划、版本可用命令不同。
+- 只有出现在本机 `/help` 或官方 Commands 页中的命令，才应当当作“当前可用命令”；社区截图和二次整理只作为线索。
 
 ### 4.2 `/init`
 
@@ -302,7 +303,24 @@ X 上有用户反馈图片维度/多图上下文问题时提示使用 `/compact`
 - 不确定哪些文件或工具定义占上下文。
 - 想决定是 `/compact` 还是 `/clear`。
 
-### 4.13 `/usage`、`/cost`、`/stats`
+### 4.13 `/copy`
+
+用途：复制最近一次 assistant 回复；有代码块时可选择复制整段回复或单个代码块。官方 Commands 页说明 `/copy [N]` 可复制第 N 个最近回复，在选择器里按 `w` 可写入文件，适合 SSH 环境。
+
+示例：
+
+```text
+/copy
+/copy 2
+```
+
+适合场景：
+
+- 从长回答里复制代码块。
+- 把远程终端中的结果写入文件而不是系统剪贴板。
+- 复用上一轮总结、PR 描述或命令模板。
+
+### 4.14 `/usage`、`/cost`、`/stats`
 
 用途：查看会话成本、token、使用情况。新版官方命令页中 `/cost` 和 `/stats` 是 `/usage` 的别名。
 
@@ -321,7 +339,7 @@ X 上有用户反馈图片维度/多图上下文问题时提示使用 `/compact`
 - 判断是否应该拆任务或清上下文。
 
 补充：自 v2.1.144 起 `/extra-usage` 被重命名为 `/usage-credits`（旧名仍兼容，但官方文档已切换）。它专门用于查看“额外用量 / 信用”相关账务，与单次会话 `/usage` 互补。
-### 4.14 `/mcp`
+### 4.15 `/mcp`
 
 用途：管理 MCP 连接和认证。
 
@@ -345,7 +363,7 @@ MCP prompt 调用格式：
 /mcp__jira__create_issue "Bug title" high
 ```
 
-### 4.15 `/agents`
+### 4.16 `/agents`
 
 用途：管理 subagents 和并行/后台工作。
 
@@ -368,15 +386,24 @@ Use the code-reviewer subagent to review my recent changes.
 Use the test-runner subagent to run focused tests and summarize failures.
 ```
 
-### 4.16 `/review`
+### 4.17 `/code-review`、`/review`、`/security-review`
 
-用途：本地审查当前改动或 PR。
+用途：审查代码改动，但三者边界不同。
+
+| 命令 | 官方定位 | 适合场景 |
+|---|---|---|
+| `/code-review [low|medium|high|xhigh|max] [--comment] [target]` | bundled skill，审查当前 diff 或指定目标的 correctness bugs | 合并前找行为 bug，可用 `--comment` 发 GitHub inline comments |
+| `/review [PR]` | 在当前本地 session 中审查 PR | 想在本地读取 PR 并做较深入只读审查 |
+| `/security-review` | 审查当前分支 pending changes 的安全漏洞 | 登录、鉴权、输入处理、secret、文件上传等改动 |
 
 示例：
 
 ```text
+/code-review high
+/code-review --comment
 /review
 /review 123
+/security-review
 ```
 
 推荐追加约束：
@@ -385,22 +412,36 @@ Use the test-runner subagent to run focused tests and summarize failures.
 只报告会导致 bug、安全问题、数据损坏或测试缺口的发现。每条必须有文件和行号。
 ```
 
-### 4.17 `/security-review`
+注意：
 
-用途：审查当前分支 pending changes 的安全问题。
+- `/code-review` 旧名 `/simplify` 仍可能兼容，但新文档应使用 `/code-review`。
+- `/review` 和 `/ultrareview` 都能审 PR；前者在本地 session，后者在云端多 agent sandbox。
+- 安全敏感 PR 建议先 `/code-review high`，再 `/security-review`，最后由人类 review。
+
+### 4.18 `/autofix-pr`
+
+用途：启动 Claude Code on the web session 监控当前分支对应 PR，并在 CI 失败或 reviewer 留评论时尝试推送修复。
 
 示例：
 
 ```text
-/security-review
+/autofix-pr
+/autofix-pr only fix lint and type errors
 ```
 
 适合场景：
 
-- 登录、鉴权、权限、输入处理、SQL、XSS、secret、文件上传等改动。
-- 合并前做最后一道安全检查。
+- 当前本地分支已有打开的 GitHub PR。
+- 希望远程 session 持续处理 CI 失败和 review comments。
+- 团队允许 Claude Code on the web 访问该仓库并推送分支更新。
 
-### 4.18 `/diff`
+前置条件和风险：
+
+- 需要 `gh` CLI，且本地分支能通过 `gh pr view` 定位 PR。
+- 默认会处理所有 CI failure 和 review comment；建议传入更窄 prompt。
+- 高风险仓库应要求人工 review，不要把自动修复等同于自动合并。
+
+### 4.19 `/diff`
 
 用途：查看当前未提交改动和每轮改动 diff。
 
@@ -416,7 +457,7 @@ Use the test-runner subagent to run focused tests and summarize failures.
 请基于 /diff 结果解释每个文件为什么被修改，并指出有没有无关改动。
 ```
 
-### 4.19 `/rewind`
+### 4.20 `/rewind`
 
 用途：回退会话或代码到某个 checkpoint。
 
@@ -437,9 +478,9 @@ Use the test-runner subagent to run focused tests and summarize failures.
 - 回退前先看 diff。
 - 如果仓库里有你自己的未保存改动，谨慎操作。
 
-### 4.20 `/run`、`/verify`、`/run-skill-generator`
+### 4.21 `/run`、`/verify`、`/run-skill-generator`
 
-用途：运行项目并验证改动是否在真实应用里生效。官方技能页说明 `/run` 和 `/verify` 会根据项目类型推断启动方式；复杂项目可用 `/run-skill-generator` 记录项目启动配方。
+用途：运行项目并验证改动是否在真实应用里生效。官方 Commands 页说明 `/run`、`/verify`、`/run-skill-generator` 是 bundled skills，要求 Claude Code v2.1.145 或更新版本；复杂项目可用 `/run-skill-generator` 记录项目启动配方。
 
 示例：
 
@@ -459,8 +500,9 @@ Use the test-runner subagent to run focused tests and summarize failures.
 
 - 简单项目先直接 `/verify`。
 - 需要数据库、env、多步骤启动时，用 `/run-skill-generator` 生成项目专属运行 skill。
+- 如果本机 `/help` 没有这些命令，优先升级 Claude Code，而不是照旧文档硬跑。
 
-### 4.21 `/batch`
+### 4.22 `/batch`
 
 用途：把大规模变更拆成多个独立单元并行执行。官方命令页说明它适合跨代码库的大变更，会拆分成多个 worktree 中的后台 subagent。
 
@@ -482,7 +524,7 @@ Use the test-runner subagent to run focused tests and summarize failures.
 - 测试薄弱。
 - 模块之间强耦合。
 
-### 4.22 `/background`、`/tasks`
+### 4.23 `/background`、`/tasks`
 
 用途：把当前任务放到后台，或查看后台任务。
 
@@ -499,7 +541,7 @@ Use the test-runner subagent to run focused tests and summarize failures.
 - 长分析。
 - 不想占用当前终端。
 
-### 4.23 `/hooks`
+### 4.24 `/hooks`
 
 用途：查看已配置 hooks。
 
@@ -515,7 +557,7 @@ Use the test-runner subagent to run focused tests and summarize failures.
 - 确认格式化、测试、安全扫描 hook 是否生效。
 - 分辨 hook 来自 user/project/local/plugin/session/built-in 哪个层级。
 
-### 4.24 `/output-style`
+### 4.25 `/output-style`
 
 用途：切换输出风格。官方文档提到内置 default、explanatory、learning 等风格，也可以自定义。
 
@@ -532,7 +574,7 @@ Use the test-runner subagent to run focused tests and summarize failures.
 - 想边学边写时用 learning。
 - 日常高效开发保持 default。
 
-### 4.25 `/fast`
+### 4.26 `/fast`
 
 用途：切换 fast mode。适合在同一 session 中把简单任务切到更快响应，把复杂任务切回默认/高推理设置。
 
@@ -555,7 +597,7 @@ Use the test-runner subagent to run focused tests and summarize failures.
 - 复杂 bug root cause。
 - 高风险迁移。
 
-### 4.26 `/focus`
+### 4.27 `/focus`
 
 用途：切换 focus view，只显示最近提示、工具调用摘要和最终响应。官方 commands 页面说明它只在 fullscreen rendering 中可用。
 
@@ -571,7 +613,7 @@ Use the test-runner subagent to run focused tests and summarize failures.
 - 只关注最后一轮结果。
 - 配合 `/context` 判断是否需要压缩。
 
-### 4.27 `/loop`
+### 4.28 `/loop`
 
 用途：重复运行一个 prompt。与 `/goal` 不同，`/loop` 根据时间间隔或自节奏开始下一轮，而不是靠完成条件判断。
 
@@ -592,7 +634,7 @@ Use the test-runner subagent to run focused tests and summarize failures.
 
 - 有明确完成条件的实现任务。那种更适合 `/goal`。
 
-### 4.28 `/schedule`
+### 4.29 `/schedule`
 
 用途：创建、更新、列出或运行 routines，让任务在 Anthropic 管理的云基础设施上执行。官方 commands 页面说明别名是 `/routines`。
 
@@ -613,7 +655,7 @@ Use the test-runner subagent to run focused tests and summarize failures.
 - 需要明确权限和数据范围。
 - 不适合无人审查地修改生产系统。
 
-### 4.29 `/install-github-app`
+### 4.30 `/install-github-app`
 
 用途：为仓库设置 Claude GitHub Actions app。官方 commands 页面说明它会引导选择 repo 并配置集成。
 
@@ -634,7 +676,30 @@ Use the test-runner subagent to run focused tests and summarize failures.
 - 外部 PR 触发规则保守。
 - 自动 PR 必须人工 review。
 
-### 4.30 `/ultraplan`
+### 4.31 `/claude-api`
+
+用途：加载 Claude API 参考材料，帮助维护使用 Anthropic SDK 的项目。官方 Commands 页说明它覆盖 Python、TypeScript、Java、Go、Ruby、C#、PHP、cURL，并可用于迁移模型或创建 Managed Agent。
+
+示例：
+
+```text
+/claude-api
+/claude-api migrate
+/claude-api managed-agents-onboard
+```
+
+适合场景：
+
+- 项目直接使用 `anthropic` 或 `@anthropic-ai/sdk`。
+- 需要升级模型 ID、thinking 配置或新版 API 参数。
+- 想把 Claude API / Managed Agents 的官方参考注入当前任务。
+
+风险：
+
+- 它是 API 迁移辅助，不等同于业务逻辑迁移；改模型和参数后仍要跑集成测试。
+- 多语言仓库要先限定扫描范围，避免跨服务误改。
+
+### 4.32 `/ultraplan`
 
 用途：在 ultraplan session 中起草计划，在浏览器中 review，然后远程执行或发回 terminal。
 
@@ -650,7 +715,7 @@ Use the test-runner subagent to run focused tests and summarize failures.
 - 需要先 review 计划再执行的任务。
 - 跨终端和 Web 协作。
 
-### 4.31 `/ultrareview`
+### 4.33 `/ultrareview`
 
 用途：在云沙箱中运行更深的多 agent code review。官方 commands 页面说明 Pro/Max 有免费次数，之后需要 usage credits。
 
@@ -666,7 +731,7 @@ Use the test-runner subagent to run focused tests and summarize failures.
 - 安全敏感变更。
 - 复杂跨模块 diff。
 
-### 4.32 `/terminal-setup`、`/scroll-speed`、`/tui`
+### 4.34 `/terminal-setup`、`/scroll-speed`、`/tui`
 
 用途：改善终端交互体验。
 
@@ -684,7 +749,7 @@ Use the test-runner subagent to run focused tests and summarize failures.
 - 调整鼠标滚轮速度。
 - 切换 fullscreen renderer。
 
-### 4.33 `/theme`、`/statusline`、`/keybindings`
+### 4.35 `/theme`、`/statusline`、`/keybindings`
 
 用途：定制显示和快捷键。
 
@@ -702,13 +767,16 @@ Use the test-runner subagent to run focused tests and summarize failures.
 - 希望状态栏显示模型、目录、git 分支、上下文等信息。
 - 自定义快捷键，例如 Ctrl+T 显示任务列表。
 
-### 4.34 `/web-setup`、`/remote-control`、`/teleport`
+### 4.36 `/voice`、`/web-setup`、`/remote-control`、`/teleport`
 
-用途：连接 Claude Code Web、远程控制和在 Web/terminal 之间迁移 session。
+用途：语音输入、连接 Claude Code Web、远程控制和在 Web/terminal 之间迁移 session。
 
 示例：
 
 ```text
+/voice tap
+/voice hold
+/voice off
 /web-setup
 /remote-control
 /teleport
@@ -716,11 +784,12 @@ Use the test-runner subagent to run focused tests and summarize failures.
 
 适合：
 
+- 用语音输入长 prompt 或临时说明；需要 Claude.ai 账号。
 - 在浏览器和 terminal 间切换。
 - 远程继续某个 session。
 - 让 cloud routines 或 web sessions 访问 GitHub 账号。
 
-### 4.35 `/insights`、`/team-onboarding`
+### 4.37 `/insights`、`/team-onboarding`
 
 用途：分析过去 session、命令和 MCP 使用，生成报告或团队 onboarding 指南。
 
@@ -737,7 +806,7 @@ Use the test-runner subagent to run focused tests and summarize failures.
 - 总结摩擦点。
 - 根据真实使用记录生成 onboarding 文档。
 
-### 4.36 `/doctor` 和 `/debug`
+### 4.38 `/doctor` 和 `/debug`
 
 用途：诊断安装、登录、配置、运行时问题。
 
