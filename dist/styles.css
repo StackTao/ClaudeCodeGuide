@@ -530,12 +530,48 @@ textarea {
   font-size: 0.9em;
 }
 
+.code-block {
+  position: relative;
+  margin: 20px 0;
+}
+
+.article-content .code-block pre {
+  margin: 0;
+}
+
+.code-copy {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 1;
+  border: 1px solid color-mix(in srgb, var(--code-text) 18%, transparent);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--code-bg) 72%, var(--code-text));
+  color: var(--code-text);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1;
+  min-height: 28px;
+  padding: 7px 9px;
+}
+
+.code-copy:hover {
+  border-color: color-mix(in srgb, var(--code-text) 36%, transparent);
+  background: color-mix(in srgb, var(--code-bg) 58%, var(--code-text));
+}
+
+.code-copy:disabled {
+  cursor: default;
+  opacity: 0.72;
+}
+
 .article-content pre {
   overflow: auto;
   background: var(--code-bg);
   color: var(--code-text);
   border-radius: var(--radius);
-  padding: 16px;
+  padding: 16px 68px 16px 16px;
   line-height: 1.6;
 }
 

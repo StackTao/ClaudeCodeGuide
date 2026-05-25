@@ -91,6 +91,13 @@ function renderMarkdown(markdown) {
   let paragraph = [];
   let blockquote = [];
 
+  const renderCodeBlock = () => `
+    <div class="code-block">
+      <button class="code-copy" type="button" data-copy-code>复制</button>
+      <pre><code>${escapeHtml(code.join("\n"))}</code></pre>
+    </div>
+  `;
+
   const flushParagraph = () => {
     if (!paragraph.length) return;
     html.push(`<p>${inlineMarkdown(paragraph.join(" "))}</p>`);
@@ -140,7 +147,7 @@ function renderMarkdown(markdown) {
     if (line.startsWith("```")) {
       closeBlocks();
       if (inCode) {
-        html.push(`<pre><code>${escapeHtml(code.join("\n"))}</code></pre>`);
+        html.push(renderCodeBlock());
         code = [];
         inCode = false;
       } else {
@@ -221,7 +228,7 @@ function renderMarkdown(markdown) {
   }
 
   closeBlocks();
-  if (inCode) html.push(`<pre><code>${escapeHtml(code.join("\n"))}</code></pre>`);
+  if (inCode) html.push(renderCodeBlock());
   return html.join("\n");
 }
 
@@ -508,6 +515,19 @@ async function copyText(text) {
   showToast("已复制");
 }
 
+async function copyCodeBlock(button) {
+  const code = button.closest(".code-block")?.querySelector("code")?.textContent || "";
+  if (!code) return;
+  await copyText(code);
+  const previous = button.textContent;
+  button.textContent = "已复制";
+  button.disabled = true;
+  setTimeout(() => {
+    button.textContent = previous;
+    button.disabled = false;
+  }, 1400);
+}
+
 function showToast(message) {
   const toast = byId("toast");
   toast.textContent = message;
@@ -622,6 +642,12 @@ function bindEvents() {
     if (item) navigate(item.dataset.doc, item.dataset.section);
   });
   byId("articleContent").addEventListener("click", (event) => {
+    const copyButton = event.target.closest("[data-copy-code]");
+    if (copyButton) {
+      copyCodeBlock(copyButton);
+      return;
+    }
+
     const item = event.target.closest("[data-section]");
     if (item) navigate(item.dataset.doc, item.dataset.section);
   });
