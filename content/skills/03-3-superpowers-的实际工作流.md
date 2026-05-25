@@ -1,5 +1,7 @@
 ## 3. Superpowers 的实际工作流
 
+来源等级：GitHub README / 官方插件说明。下面是工作流摘要，不是 Claude Code 内置强制流程。
+
 Superpowers 仓库 README 描述的基本流程是：
 
 1. **brainstorming**：写代码前先澄清需求、探索方案、生成设计文档。
@@ -25,4 +27,8 @@ Use Superpowers workflow. Start with brainstorming. Do not modify files until th
 /execute-plan
 ```
 
-注意：Superpowers 的强项是“流程纪律”。如果只是改一个 typo，它会显得重；如果是中大型功能，它能显著减少“Claude 直接冲进去写错方向”的问题。
+风险边界：
+
+- Superpowers 的强项是“流程纪律”。如果只是改一个 typo，它会显得重。
+- 如果是中大型功能，它能减少“Claude 直接冲进去写错方向”的概率，但不能替代需求 review、测试和人工验收。
+- 如果自动触发不符合你的团队节奏，把它改成显式调用：只在提示词里写明“Use Superpowers workflow”时启用。

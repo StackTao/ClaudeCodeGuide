@@ -1,4 +1,10 @@
 # Claude Code 必备 Skills、插件与增强工作流指南
 
-> 版本：2026-05-21  
-> 核心修订：本版把 Superpowers、GSD、Codex plugin、last30days、Context7、Code Simplifier 等“增强型工作流插件”放到中心位置。官方 marketplace 插件仍重要，但不再只按官方分类罗列。同步纳入 v2.1.144 / v2.1.145 起 `/plugin` 的依赖强制、安装前能力预览、上下文成本估算等新特性。
+> 版本：2026-05-25
+> 核心修订：本版按“官方基础设施优先、第三方增强按场景启用、社区内容必须标注来源等级”的原则整理。Superpowers、GSD、Codex plugin、last30days、Context7、Code Simplifier 等仍保留为重点观察对象，但不再写成默认必装。
+
+使用前先判断来源等级：
+
+- **官方事实**：官方 marketplace、官方文档、官方 GitHub，可作为安装和能力事实。
+- **社区双源验证**：至少两个独立来源或一个高质量长文支撑，可作为经验建议。
+- **社区线索**：单个帖子、X 短帖、目录页或二次整理，只能作为试用方向。

@@ -1,6 +1,8 @@
 ## 6. GSD / Get Shit Done：更偏“上下文工程 + 自动执行”
 
-GSD 是另一个社区高频提到的增强系统。和 Superpowers 相比，它更强调：
+来源等级：社区双源验证 / 中。GSD 是社区高频提到的增强系统，能力和安装方式以其当前仓库 README 或 marketplace manifest 为准。
+
+核心结论：和 Superpowers 相比，GSD 更强调：
 
 - context rot 管理。
 - spec-driven development。
@@ -37,3 +39,10 @@ npx claudepluginhub glittercowboy/get-shit-done --plugin get-shit-done
 - Reddit 上既有高度评价，也有人认为 GSD/Superpowers 对小任务是“训练轮”。
 - GSD 类工具会带来大量命令、agents、hooks，安装前必须审查。
 - 如果你还没有稳定测试和项目说明，先不要让它长时间自动执行。
+- 团队项目只把它作为可选 workflow，不把社区安装命令当成长期稳定 API。
+
+验证方式：
+
+- 先在 disposable worktree 里跑一个非生产任务。
+- 对照 `/plugin` 的 Will install 和仓库 manifest，列出新增 commands、agents、skills、hooks。
+- 只有当它能产出可 review 的 plan、测试结果和提交边界时，才考虑进入团队流程。
