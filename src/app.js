@@ -88,11 +88,24 @@ const escapeHtml = (value) =>
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
 
+const CALLOUT_PATTERNS = [
+  { re: /^Why this works\s*\/\s*这样写为什么有效$/i, label: "Why this works", cls: "" },
+  { re: /^Make it stick\s*\/\s*持久化$/i, label: "Make it stick", cls: "success" },
+  { re: /^Needs\s*\/\s*依赖$/i, label: "Needs", cls: "warn" },
+  { re: /^使用方式$/i, label: "使用方式", cls: "info" },
+];
+
+function calloutFor(strongText) {
+  const trimmed = String(strongText || "").trim();
+  return CALLOUT_PATTERNS.find((p) => p.re.test(trimmed)) || null;
+}
+
 const inlineMarkdown = (text) => {
   let html = escapeHtml(text);
   html = html.replace(/`([^`]+)`/g, "<code>$1</code>");
   html = html.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
   html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noreferrer">$1</a>');
+  html = html.replace(/(★\s*Start\s*\d+)/g, '<span class="start-chip">$1</span>');
   return html;
 };
 
@@ -110,22 +123,41 @@ function renderMarkdown(markdown) {
   state.headings = [];
   let inCode = false;
   let code = [];
+  let codeLang = "";
   let inTable = false;
   let table = [];
   let listType = null;
   let paragraph = [];
   let blockquote = [];
 
-  const renderCodeBlock = () => `
-    <div class="code-block">
-      <button class="code-copy" type="button" data-copy-code>复制</button>
+  const renderCodeBlock = () => {
+    const langClass = codeLang ? ` data-lang="${escapeHtml(codeLang)}"` : "";
+    return `
+    <div class="code-block"${langClass}>
+      <button class="code-copy" type="button" data-copy-code aria-label="复制代码">
+        <span class="code-copy-label">复制</span>
+      </button>
       <pre><code>${escapeHtml(code.join("\n"))}</code></pre>
     </div>
   `;
+  };
 
   const flushParagraph = () => {
     if (!paragraph.length) return;
-    html.push(`<p>${inlineMarkdown(paragraph.join(" "))}</p>`);
+    const raw = paragraph.join(" ");
+    const calloutMatch = raw.match(/^\*\*([^*]+)\*\*\s*[：:]\s*([\s\S]*)$/);
+    if (calloutMatch) {
+      const callout = calloutFor(calloutMatch[1]);
+      if (callout) {
+        const body = inlineMarkdown(calloutMatch[2].trim());
+        html.push(
+          `<aside class="callout ${callout.cls}"><span class="callout-label">${escapeHtml(callout.label)}</span><div class="callout-body">${body}</div></aside>`,
+        );
+        paragraph = [];
+        return;
+      }
+    }
+    html.push(`<p>${inlineMarkdown(raw)}</p>`);
     paragraph = [];
   };
 
@@ -174,8 +206,10 @@ function renderMarkdown(markdown) {
       if (inCode) {
         html.push(renderCodeBlock());
         code = [];
+        codeLang = "";
         inCode = false;
       } else {
+        codeLang = line.slice(3).trim();
         inCode = true;
       }
       continue;
@@ -392,6 +426,39 @@ function renderToc() {
     )
     .join("");
   byId("toc").innerHTML = `<div class="toc-title">本页目录</div>${tocItems}`;
+  setupScrollSpy();
+}
+
+let scrollSpyObserver = null;
+const scrollSpyState = { visible: new Set() };
+
+function setupScrollSpy() {
+  if (scrollSpyObserver) {
+    scrollSpyObserver.disconnect();
+    scrollSpyObserver = null;
+  }
+  scrollSpyState.visible.clear();
+  const headingIds = state.headings
+    .filter((heading) => heading.level >= 2 && heading.level <= 3)
+    .map((heading) => heading.id);
+  if (!headingIds.length || typeof IntersectionObserver !== "function") return;
+  const headingEls = headingIds.map((id) => document.getElementById(id)).filter(Boolean);
+  if (!headingEls.length) return;
+
+  scrollSpyObserver = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) scrollSpyState.visible.add(entry.target.id);
+        else scrollSpyState.visible.delete(entry.target.id);
+      }
+      const activeId = headingIds.find((id) => scrollSpyState.visible.has(id));
+      document.querySelectorAll("#toc button[data-heading]").forEach((btn) => {
+        btn.classList.toggle("active", btn.dataset.heading === activeId);
+      });
+    },
+    { rootMargin: "-72px 0px -70% 0px", threshold: 0 },
+  );
+  headingEls.forEach((el) => scrollSpyObserver.observe(el));
 }
 
 function sectionBody(section) {
@@ -431,6 +498,10 @@ function renderDoc(docSlug, sectionSlug) {
   document.querySelectorAll(".section-item").forEach((item) =>
     item.classList.toggle("active", item.dataset.doc === doc.slug && item.dataset.section === section.slug),
   );
+  const activeSectionItem = document.querySelector(".section-item.active");
+  if (activeSectionItem) {
+    activeSectionItem.scrollIntoView({ block: "nearest", behavior: "auto" });
+  }
   renderPager(doc, section);
   updateIssueLinks();
   updateGithubLinks();
@@ -603,22 +674,27 @@ async function loadGithubStatus() {
   }
 }
 
-async function copyText(text) {
+async function copyText(text, options = {}) {
   await navigator.clipboard.writeText(text);
-  showToast("已复制");
+  if (!options.silent) showToast("已复制");
 }
 
 async function copyCodeBlock(button) {
   const code = button.closest(".code-block")?.querySelector("code")?.textContent || "";
   if (!code) return;
-  await copyText(code);
-  const previous = button.textContent;
-  button.textContent = "已复制";
+  await copyText(code, { silent: true });
+  const label = button.querySelector(".code-copy-label");
+  const previous = label ? label.textContent : button.textContent;
+  if (label) label.textContent = "✓ 已复制";
+  else button.textContent = "✓ 已复制";
+  button.classList.add("copied");
   button.disabled = true;
   setTimeout(() => {
-    button.textContent = previous;
+    if (label) label.textContent = previous;
+    else button.textContent = previous;
+    button.classList.remove("copied");
     button.disabled = false;
-  }, 1400);
+  }, 1500);
 }
 
 function showToast(message) {
@@ -661,6 +737,12 @@ async function renderIssues() {
     const fallback = byId("searchIssues")?.href || githubUrl("/issues");
     list.innerHTML = `<p class="empty">无法读取 GitHub Issue：${escapeHtml(error.message)}。<a href="${fallback}" target="_blank" rel="noreferrer">打开 GitHub 搜索</a></p>`;
   }
+}
+
+function updateSearchFocus(items) {
+  items.forEach((el, idx) => el.classList.toggle("focused", idx === state.searchFocusIndex));
+  const target = items[state.searchFocusIndex];
+  if (target) target.scrollIntoView({ block: "nearest" });
 }
 
 function searchDocs(query) {
@@ -714,17 +796,60 @@ function bindEvents() {
     renderDoc(route.docSlug, route.sectionSlug);
   });
 
+  const isMac = /Mac|iPhone|iPad/i.test(navigator.platform || navigator.userAgent);
+  const hotkey = byId("searchHotkey");
+  if (hotkey) hotkey.textContent = isMac ? "⌘K" : "Ctrl K";
+
+  document.addEventListener("keydown", (event) => {
+    const target = event.target;
+    const inField = target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable);
+    if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+      event.preventDefault();
+      byId("searchInput")?.focus();
+      byId("searchInput")?.select();
+      return;
+    }
+    if (event.key === "/" && !inField) {
+      event.preventDefault();
+      byId("searchInput")?.focus();
+    }
+  });
+
   byId("menuButton").addEventListener("click", () => byId("sidebar").classList.toggle("open"));
   byId("themeButton").addEventListener("click", () => {
     applyTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark");
   });
   byId("refreshGithub")?.addEventListener("click", loadGithubStatus);
-  byId("searchInput").addEventListener("input", (event) => searchDocs(event.target.value));
+  byId("searchInput").addEventListener("input", (event) => {
+    state.searchFocusIndex = -1;
+    searchDocs(event.target.value);
+  });
   byId("searchInput").addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
       byId("searchInput").value = "";
       byId("searchResults").hidden = true;
       byId("searchInput").blur();
+      return;
+    }
+    const panel = byId("searchResults");
+    if (panel.hidden) return;
+    const items = Array.from(panel.querySelectorAll(".result-item"));
+    if (!items.length) return;
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      state.searchFocusIndex = Math.min((state.searchFocusIndex ?? -1) + 1, items.length - 1);
+      updateSearchFocus(items);
+    } else if (event.key === "ArrowUp") {
+      event.preventDefault();
+      state.searchFocusIndex = Math.max((state.searchFocusIndex ?? 0) - 1, 0);
+      updateSearchFocus(items);
+    } else if (event.key === "Enter") {
+      const idx = state.searchFocusIndex ?? 0;
+      const item = items[idx] || items[0];
+      if (item) {
+        event.preventDefault();
+        navigate(item.dataset.doc, item.dataset.section);
+      }
     }
   });
   document.addEventListener("click", (event) => {
