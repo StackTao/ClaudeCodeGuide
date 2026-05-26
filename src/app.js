@@ -382,11 +382,14 @@ function renderNav() {
       const doc = displayDoc(rawDoc);
       const sections = (doc.sections || [])
         .map(
-          (section) => `
-            <button class="section-item" data-doc="${doc.slug}" data-section="${section.slug}" type="button">
-              <span class="section-title">${escapeHtml(cleanTitle(section.title))}</span>
+          (section) => {
+            const cleaned = cleanTitle(section.title);
+            return `
+            <button class="section-item" data-doc="${doc.slug}" data-section="${section.slug}" type="button" title="${escapeHtml(cleaned)}">
+              <span class="section-title">${escapeHtml(cleaned)}</span>
             </button>
-          `,
+          `;
+          },
         )
         .join("");
       return `
