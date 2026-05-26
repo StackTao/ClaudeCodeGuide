@@ -37,6 +37,31 @@ const state = {
 
 const byId = (id) => document.getElementById(id);
 
+function configuredBasePath() {
+  try {
+    return new URL(SITE_CONFIG.githubPages).pathname || "/";
+  } catch {
+    return "/";
+  }
+}
+
+function appBasePath() {
+  const configured = configuredBasePath();
+  return location.pathname.startsWith(configured) ? configured : "/";
+}
+
+function trimSlashes(value) {
+  return String(value || "").replace(/^\/+|\/+$/g, "");
+}
+
+function stripMarkdownExtension(value) {
+  return String(value || "").replace(/\.md$/i, "");
+}
+
+function routeToken(value) {
+  return slugify(stripMarkdownExtension(decodeURIComponent(String(value || ""))));
+}
+
 function applyTheme(theme) {
   const resolved =
     theme ||
@@ -240,6 +265,56 @@ function sectionBySlug(doc, sectionSlug) {
   return doc.sections?.find((section) => section.slug === sectionSlug) || doc.sections?.[0];
 }
 
+function docByRoutePart(part) {
+  const token = routeToken(part);
+  return window.DOCS.find((doc) => routeToken(doc.slug) === token || routeToken(doc.directory) === token) || window.DOCS[0];
+}
+
+function sectionRouteAliases(section) {
+  const sourceFile = section.sourceFile || "";
+  const fileName = sourceFile.split("/").pop() || "";
+  const fileStem = stripMarkdownExtension(fileName);
+  const withoutLeadingNumber = fileStem.replace(/^\d+-/, "");
+  const withoutDoubleNumber = fileStem.replace(/^\d+-\d+-/, "");
+  return [
+    section.slug,
+    section.sectionSlug,
+    section.sourceFile,
+    fileName,
+    fileStem,
+    withoutLeadingNumber,
+    withoutDoubleNumber,
+    section.title,
+  ]
+    .filter(Boolean)
+    .map(routeToken);
+}
+
+function sectionByRouteParts(doc, parts) {
+  const raw = parts.join("/");
+  const candidates = [
+    raw,
+    parts[0],
+    parts.slice(-1)[0],
+    parts.slice(-2).join("/"),
+  ]
+    .filter(Boolean)
+    .map(routeToken);
+
+  return (
+    (doc.sections || []).find((section) => {
+      const aliases = sectionRouteAliases(section);
+      return candidates.some((candidate) => aliases.includes(candidate));
+    }) || doc.sections?.[0]
+  );
+}
+
+function routePartsFromPath(pathname = location.pathname) {
+  const base = appBasePath();
+  const relative = pathname.startsWith(base) ? pathname.slice(base.length) : pathname.replace(/^\//, "");
+  return trimSlashes(relative).split("/").filter(Boolean).map(decodeURIComponent);
+}
+
 function displayDoc(doc) {
   return {
     ...doc,
@@ -386,19 +461,37 @@ function renderPager(doc, section) {
 }
 
 function parseRoute() {
+  const params = new URLSearchParams(location.search);
+  const fallbackPath = params.get("path");
   const parts = location.hash.replace(/^#\/?/, "").split("/").filter(Boolean);
-  const doc = docBySlug(parts[0]);
-  return {
+  if (!parts.length && fallbackPath) {
+    parts.push(...trimSlashes(fallbackPath).split("/").filter(Boolean).map(decodeURIComponent));
+  }
+  if (!parts.length) parts.push(...routePartsFromPath());
+  if (parts[0] === "content") parts.shift();
+  const doc = docByRoutePart(parts[0]);
+  const section = sectionByRouteParts(doc, parts.slice(1));
+  const route = {
     docSlug: doc.slug,
-    sectionSlug: parts[1] || doc.sections?.[0]?.slug || "overview",
+    sectionSlug: section?.slug || doc.sections?.[0]?.slug || "overview",
   };
+  if (fallbackPath || location.search) history.replaceState(null, "", routeUrl(route.docSlug, route.sectionSlug));
+  return route;
+}
+
+function routeUrl(docSlug, sectionSlug) {
+  const doc = docBySlug(docSlug);
+  const section = sectionBySlug(doc, sectionSlug);
+  return `${appBasePath()}${encodeURIComponent(doc.slug)}/${encodeURIComponent(section.slug)}`;
 }
 
 function navigate(docSlug, sectionSlug) {
-  history.pushState(null, "", `#/${docSlug}/${sectionSlug}`);
+  const doc = docBySlug(docSlug);
+  const section = sectionBySlug(doc, sectionSlug);
+  history.pushState(null, "", routeUrl(doc.slug, section.slug));
   byId("searchInput").value = "";
   byId("searchResults").hidden = true;
-  renderDoc(docSlug, sectionSlug);
+  renderDoc(doc.slug, section.slug);
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 

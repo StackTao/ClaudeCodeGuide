@@ -1,11 +1,11 @@
 ## 16. 官方 Prompt Library 中文对照版
 
 > 来源：Claude Code Prompt Library（https://code.claude.com/docs/en/prompt-library）  
-> 说明：本节按官方页面的用途和结构做中文知识库适配：保留英文可复制 Prompt，并在每条后面给中文对照。英文为面向本项目的改写模板，不是官方页面逐字镜像。
+> 说明：本节逐条镜像官方 Prompt Library 的全部 51 条提示词，按官方的 SDLC 阶段（Discover / Design / Build / Ship / Operate）和分类组织。每条都保留英文原版（带官方示例填充值）+ 中文对照翻译，方便直接复制使用。变量值仅是官方给出的示例，使用时请替换为你自己的真实任务、文件、命令或目标。
 
 ### 16.1 使用方式
 
-这个库适合在不知道如何开口、想快速启动常见 Claude Code 工作流时使用。复制英文 Prompt 后，把尖括号里的内容替换成你的真实任务、文件、日志、命令或成功标准。
+这个库适合在不知道如何开口、想快速启动常见 Claude Code 工作流时使用。复制英文 Prompt 后，把里面的示例值（如 `src/scheduler/queue.ts`、`#312`、`p95 latency` 等）替换成你的真实任务、文件、日志、命令或成功标准。
 
 建议每次至少补齐四件事：
 
@@ -14,439 +14,725 @@
 - **Constraints / 约束**：哪些文件不能动，是否允许新增依赖，是否必须先只读。
 - **Verification / 验证**：运行什么命令，或用什么方式确认结果正确。
 
-### 16.2 Explore / 探索项目
+官方页面还提供了"Start here"五条入门 Prompt，本文档按重要程度在标题旁标注 `★ Start 1` ~ `★ Start 5`。
 
-#### Explore the codebase / 探索代码库
+---
 
+### 16.2 Discover / 发现
+
+#### Onboard / 入门
+
+##### Get oriented in a new repository / 在新仓库里建立全局认识 ★ Start 1
+
+```text
+give me an overview of this codebase: architecture, key directories, and how the pieces connect
+```
+
+```text
+给我这个代码库的总览：架构、关键目录，以及各部分之间的连接方式。
+```
+
+> **Why this works / 这样写为什么有效**：描述你想知道什么，而不是该读哪些文件。Claude 会自己探索项目，并返回各部分如何拼接的总结。  
+> **Make it stick / 持久化**：运行 `/init` 生成 `CLAUDE.md`，让 Claude 每个会话都自动记住这些。
+
+#### Understand / 理解
+
+##### Explain unfamiliar code / 解释陌生代码
+
+```text
+explain what src/scheduler/queue.ts does and how data flows through it. write it up as an HTML page with a diagram, then open it in my browser
+```
+
+```text
+解释 src/scheduler/queue.ts 做了什么以及数据如何在其中流动。把结果写成一个带图表的 HTML 页面，然后在浏览器中打开。
+```
+
+> **Why this works / 这样写为什么有效**：指明文件路径并说明你想要的答案形式。可以把 HTML 页面换成图、要点列表或任何最适合你学习方式的格式。  
+> **Make it stick / 持久化**：设置 output style，让 Claude 始终用你偏好的格式解释。
+
+##### Find where something happens / 找到某种行为发生的位置 ★ Start 2
+
+```text
+where do we validate uploaded file types?
+```
+
+```text
+我们在哪里校验上传文件的类型？
+```
+
+> **Why this works / 这样写为什么有效**：按行为搜索，而不是按文件名。即使你不知道文件叫什么、放在哪个目录，这种搜索都能工作。
+
+##### Check what breaks before you delete / 删除前确认会破坏什么
+
+```text
+what would break if I deleted the retryWithBackoff helper?
+```
+
+```text
+如果我删掉 retryWithBackoff 这个 helper 会破坏什么？
+```
+
+> **Why this works / 这样写为什么有效**：在删除之前先问。调用方与下游影响清单会告诉你这只是一行清理，还是一次需要协调的改动。
+
+##### Trace how code evolved / 追溯代码演进
+
+```text
+look through the commit history of internal/auth/session.go and summarize how it evolved and why
+```
+
+```text
+查看 internal/auth/session.go 的提交历史，总结它是如何演进的，以及为什么。
+```
+
+> **Why this works / 这样写为什么有效**：当问题是"为什么"而不是"是什么"时，让 Claude 看提交历史。它会读取你用的版本控制工具的 log 与 blame，并解释当前实现背后的决策。
+
+##### Scope a change before you start / 在动手前评估改动范围
+
+```text
+which files would I need to touch to add a dark mode toggle to settings?
+```
+
+```text
+如果要在 settings 里加一个深色模式开关，我需要改哪些文件？
+```
+
+> **Why this works / 这样写为什么有效**：在把工作放进路线图之前先估量工作量。文件清单会告诉你这是单个组件的改动，还是跨模块的大改。
+
+##### Ask the codebase a product question / 用代码库回答产品问题
+
+```text
+I am a PM. walk me through what happens when a user clicks Export to PDF, from the UI down to the result
+```
+
+```text
+我是 PM。带我从 UI 一直到结果，走一遍用户点击"导出为 PDF"时发生的事情。
+```
+
+> **Why this works / 这样写为什么有效**：说明你的角色，答案就会用相应的深浅度来讲解。Claude 直接从源代码解释产品实际行为，你不需要自己去读代码。  
+> **Make it stick / 持久化**：设置 output style，让 Claude 始终用这个层次回答。
+
+---
+
+### 16.3 Design / 设计
+
+#### Plan / 计划
+
+##### Plan a multi-file change before touching code / 多文件改动前先做计划
+
+```text
+plan how to refactor the payment module to support multiple currencies. list the files you would change, but don't edit anything yet
+```
+
+```text
+为重构 payment 模块以支持多币种制定计划。列出你会修改的文件，但暂时不要编辑任何内容。
+```
+
+> **Why this works / 这样写为什么有效**："don't edit yet" 把探索和实际改动分开，让你先看到方案再让代码改动。想在每次 prompt 都默认进入计划优先模式，按 Shift+Tab 进入 plan mode。
+
+##### Draft a spec by interview / 通过访谈起草规格说明
+
+```text
+I want to build per-workspace rate limits. interview me about implementation, UX, edge cases, and tradeoffs until we have covered everything, then write the spec to SPEC.md
+```
+
+```text
+我想做"按 workspace 区分的限流"。请围绕实现、UX、边界情况和取舍来访谈我，直到我们覆盖所有方面，然后把规格写到 SPEC.md。
+```
+
+> **Why this works / 这样写为什么有效**：让 Claude 来访谈你，而不是你自己写 spec。它会用结构化问题问你直到需求完整，再把结果写入文件。  
+> **Make it stick / 持久化**：把访谈问题保存为 `/spec` skill，让每份规格都从同样的方式开始。
+
+##### Turn a meeting into tickets / 把会议转化为工单
+
+```text
+read @meeting-notes.md and write up the action items, then create a Linear ticket for each with acceptance criteria
+```
+
+```text
+阅读 @meeting-notes.md，整理出 action items，然后在 Linear 中为每一条创建带验收标准的工单。
+```
+
+> **Why this works / 这样写为什么有效**：跳过转写步骤。Claude 从非结构化输入里抽取 action items，并通过 MCP 直接写进你的 tracker，让你审的是工单而不是会议纪要。  
+> **Make it stick / 持久化**：把它保存为 `/tickets` skill。  
+> **Needs / 依赖**：你的 issue tracker 作为 claude.ai connector 或 MCP server 接入。
+
+##### Map edge cases before building / 实现前先梳理边界情况
+
+```text
+list the error states, empty states, and edge cases for the file upload flow that the design needs to cover
+```
+
+```text
+列出文件上传流程里设计需要覆盖的错误状态、空状态和边界情况。
+```
+
+> **Why this works / 这样写为什么有效**：问的是"缺什么"而不是"有什么"。Claude 会列出 happy path 设计常常漏掉的错误态、空态与边界情况。
+
+#### Prototype / 原型
+
+##### Turn a mockup into a working prototype / 把设计稿变成可点击原型
+
 ```text
-Explore this repository before making changes. Identify the main entry points, core modules, build and test commands, and the files most likely related to <task>. Do not edit files yet. End with a short implementation plan and any questions that need my input.
+here is a mockup. build a working prototype I can click through, matching the layout and states shown
 ```
 
 ```text
-在修改前先探索这个仓库。找出主要入口、核心模块、构建和测试命令，以及最可能和 <任务> 相关的文件。暂时不要编辑文件。最后给出简短实现计划，并列出需要我确认的问题。
+这是一个设计稿。请构建一个我可以点击通过的可运行原型，与所示布局和状态匹配。
 ```
+
+> **Why this works / 这样写为什么有效**：可点击原型回答静态设计稿回答不了的问题。把可运行代码交给工程，比在文档里描述交互更有效。  
+> **使用方式**：粘贴、拖入或用 @ 引用你的设计稿图片，然后发送这条 prompt。
 
-#### Explain a feature / 解释现有功能
+##### Implement from a screenshot and self-check / 从截图实现并自检
 
 ```text
-Explain how <feature> works in this codebase. Trace the flow from user input or API entry point to storage, side effects, and output. Include the important files and functions, but do not modify anything.
+implement this design, then take a screenshot of the result, compare it to the original, and fix any differences
 ```
 
 ```text
-解释这个代码库里的 <功能> 是如何工作的。从用户输入或 API 入口开始，追踪到存储、副作用和输出。列出重要文件和函数，但不要修改任何内容。
+实现这个设计，然后对结果截图，与原图对比，并修复任何差异。
 ```
+
+> **Why this works / 这样写为什么有效**：这给了 Claude 一个验证闭环：渲染 → 与原图对比 → 自行迭代，你不需要逐项指出差异。  
+> **Make it stick / 持久化**：用 `/goal` 让 Claude 一直迭代直到截图匹配。  
+> **Needs / 依赖**：让 Claude 能渲染并截图的方式（桌面版内置；终端版安装 Chrome 扩展或 Playwright MCP）。
+
+---
+
+### 16.4 Build / 构建
 
-#### Find relevant files / 定位相关文件
+#### Implement / 实现
 
+##### Follow an existing pattern / 复用现有模式
+
 ```text
-Find the files and tests related to <behavior>. Rank them by relevance and explain why each one matters. If the code path is unclear, show the evidence and the next file you would inspect.
+look at how the GitHub webhook handler is implemented to understand the pattern, then build a Stripe webhook handler the same way
 ```
 
 ```text
-找出和 <行为> 相关的文件和测试，按相关性排序，并解释每个文件为什么重要。如果调用路径不清楚，请说明证据和下一步要看的文件。
+先看 GitHub webhook handler 是怎么实现的，理解它的模式，然后用同样的方式构建一个 Stripe webhook handler。
 ```
+
+> **Why this works / 这样写为什么有效**：指向你已经满意的代码。没有参考时，Claude 默认使用通用最佳实践；有参考时，它会匹配你代码库实际使用的约定。  
+> **Make it stick / 持久化**：让 Claude 把它遵循的模式写进 `CLAUDE.md`，未来会话不靠参考也能保持一致。
 
-#### Understand context usage / 理解上下文占用
+##### Generate docs for undocumented code / 为无文档代码生成文档
 
 ```text
-Review the current task context and tell me what information is essential, what is probably stale, and what should be moved into project documentation or a reusable command.
+find the public functions in src/auth/ without JSDoc comments and add them, matching the style already used in the file
 ```
 
 ```text
-检查当前任务上下文，告诉我哪些信息是必要的，哪些可能已经过时，哪些应该沉淀到项目文档或可复用命令里。
+找出 src/auth/ 中没有 JSDoc 注释的公共函数，为它们补上注释，风格与文件中已有的一致。
 ```
 
-### 16.3 Plan / 计划
+> **Why this works / 这样写为什么有效**：指明范围与格式。Claude 找出缺失的部分，并匹配文件已有的注释风格，让新增文档读起来和其他部分一致。
 
-#### Plan before editing / 先计划再修改
+##### Add a small, well-defined feature / 添加小而明确的功能
 
 ```text
-Create a plan for <task> before editing files. Include the files you expect to touch, the smallest safe implementation path, verification commands, and risks. Wait for my confirmation before making changes.
+add a /health endpoint that returns the app version and uptime
 ```
 
 ```text
-在编辑文件前，为 <任务> 制定计划。说明预计会修改哪些文件、最小安全实现路径、验证命令和风险。等我确认后再开始修改。
+新增一个 /health 端点，返回应用版本和运行时长。
 ```
 
-#### Break down a large task / 拆解大型任务
+> **Why this works / 这样写为什么有效**：说明输入和输出，而不是怎么实现。Claude 会找到类似代码所在的位置，把你的实现放到旁边。
 
+##### Build a small internal tool from scratch / 从零搭建小型内部工具
+
 ```text
-Break <large task> into small, verifiable steps. For each step, list the goal, files likely involved, validation method, and what should be reviewed before continuing.
+create a drag-and-drop Kanban board with three columns using HTML, CSS, and vanilla JavaScript, then open it in my browser
 ```
 
 ```text
-把 <大型任务> 拆成小的、可验证的步骤。每一步都列出目标、可能涉及的文件、验证方法，以及继续前需要检查的内容。
+用 HTML、CSS 和原生 JavaScript 创建一个三列的拖放式看板，然后在浏览器中打开。
 ```
 
-#### Compare approaches / 比较方案
+> **Why this works / 这样写为什么有效**：你不需要项目、框架或构建步骤。描述工具并让 Claude 打开它，你能立刻看到它在运行。
 
+##### Work an issue end to end / 端到端处理一个 Issue
+
 ```text
-Compare two or three implementation approaches for <task>. For each approach, describe the tradeoffs, risk, amount of code touched, and how it would be tested. Recommend the simplest option that meets the goal.
+read issue #312, implement the fix, and run the tests
 ```
 
 ```text
-比较 <任务> 的两到三种实现方案。分别说明取舍、风险、改动范围和测试方式。推荐能满足目标的最简单方案。
+阅读 issue #312，实现修复，并运行测试。
 ```
+
+> **Why this works / 这样写为什么有效**：给 issue 编号，而不是摘要。Claude 自己读完整的工单，你忘记提的需求也能被它带进来，并在回报前先验证改动。  
+> **Needs / 依赖**：已认证的 gh CLI，或将 GitHub 作为 claude.ai connector 接入。
 
-#### Prepare a migration plan / 准备迁移计划
+##### Find and update copy across the codebase / 跨代码库查找并更新文案
 
 ```text
-Plan a migration from <old behavior> to <new behavior>. Include compatibility concerns, rollout order, tests, data or schema changes, and a rollback strategy.
+find every place we say "Sign up free" or a close variant, show me each one in context, then update them all to "Start free trial". leave tests and the changelog alone
 ```
 
 ```text
-规划从 <旧行为> 到 <新行为> 的迁移。包括兼容性问题、上线顺序、测试、数据或 schema 变化，以及回滚策略。
+找出所有出现"Sign up free"或近似变体的位置，把每一处都带上下文展示给我，然后全部更新为"Start free trial"。测试和 changelog 不要动。
 ```
 
-### 16.4 Build / 实现
+> **Why this works / 这样写为什么有效**：要求查找变体并指明不动的部分。Claude 能发现纯字面搜索漏掉的措辞，同时不动测试 fixture 和历史记录，你只审用户真正看到的文案。
 
-#### Implement a feature / 实现功能
+##### Draft a document from past examples / 从历史样本起草文档
 
 ```text
-Implement <feature> with the smallest reasonable change. Follow existing patterns, avoid unrelated refactors, and add or update tests for the behavior. Run the relevant checks and summarize the changed files.
+read the privacy impact assessments in legal/pia/ to learn the structure and voice, then draft a new one for the new analytics integration
 ```
 
 ```text
-用尽量小的合理改动实现 <功能>。遵循现有模式，避免无关重构，并为该行为新增或更新测试。运行相关检查并总结改动文件。
+阅读 legal/pia/ 中的隐私影响评估，学习其结构和语气，然后为新的分析集成起草一份新的。
 ```
 
-#### Add an API endpoint / 增加 API 端点
+> **Why this works / 这样写为什么有效**：指向一个已经完成工作的文件夹，而不是描述你的风格。Claude 从你已发布的成品里学结构与语气，第一稿就像你自己写的。  
+> **Make it stick / 持久化**：把这套语气保存为 skill，让每份草稿都从这里开始。
 
+#### Test / 测试
+
+##### Write tests, run them, fix failures / 写测试、运行、修复失败 ★ Start 4
+
 ```text
-Add an API endpoint for <operation>. Match the style of existing endpoints, validate inputs, return consistent errors, and add tests for success and failure cases.
+write tests for app/parsers/feed.py, run them, and fix any failures
 ```
 
 ```text
-为 <操作> 增加一个 API 端点。匹配现有端点风格，校验输入，返回一致的错误格式，并为成功和失败场景补测试。
+为 app/parsers/feed.py 写测试，运行它们，并修复任何失败。
 ```
 
-#### Build a UI flow / 构建 UI 流程
+> **Why this works / 这样写为什么有效**：把"写、运行、修"放在一起，Claude 会自行迭代而不会停下来等指令。  
+> **Make it stick / 持久化**：运行 `/init` 让 Claude 自动学会你的测试命令。
 
+##### Drive implementation from tests / 用测试驱动实现
+
 ```text
-Build the UI flow for <user action>. Reuse existing components and layout patterns. Handle loading, empty, error, and success states. Verify it works on desktop and mobile.
+write tests for the password reset flow first, then implement it until they pass
 ```
 
 ```text
-构建 <用户动作> 的 UI 流程。复用现有组件和布局模式。处理加载、空状态、错误和成功状态。验证桌面端和移动端都可用。
+先为密码重置流程写测试，然后实现功能直到全部通过。
 ```
 
-#### Add rate limiting / 增加限流
+> **Why this works / 这样写为什么有效**：测试驱动开发：测试定义了"完成"的标准，Claude 持续迭代实现直至全部通过。
 
+##### Fill gaps from a coverage report / 根据覆盖率报告补缺口
+
 ```text
-Add rate limiting to <public surface>. Use the project’s existing middleware or infrastructure if available. Make the limit observable in tests or logs, and ensure existing tests still pass.
+read coverage/coverage-summary.json and add tests for the lowest-covered files until each is above 80%
 ```
 
 ```text
-为 <公开入口> 增加限流。优先使用项目已有中间件或基础设施。让限流能通过测试或日志观察到，并确保现有测试仍然通过。
+读取 coverage/coverage-summary.json，为覆盖率最低的文件补测试，直到每个都超过 80%。
 ```
+
+> **Why this works / 这样写为什么有效**：指向真实的覆盖率报告，而不是凭猜测。Claude 读实际数字，为最需要测试的文件写测试。  
+> **Make it stick / 持久化**：把它设为 `/goal`，让 Claude 持续写测试直到达到目标。
 
-#### Match an existing pattern / 复用现有模式
+#### Refactor / 重构
 
+##### Migrate a pattern across the codebase / 跨代码库迁移模式
+
 ```text
-Add <new feature> by following the same structure and style as <reference file or feature>. Keep names, error handling, and tests consistent with that reference.
+migrate everything from the old logging API to the structured logger: identify every place that needs to change, then make the changes
 ```
 
 ```text
-参考 <参考文件或功能> 的结构和风格新增 <新功能>。命名、错误处理和测试都要与参考实现保持一致。
+把所有使用旧 logging API 的地方迁移到 structured logger：先识别出每一处需要改的位置，再统一修改。
 ```
 
-### 16.5 Debug / 调试
+> **Why this works / 这样写为什么有效**：描述旧模式与新模式。让 Claude 先"识别每一处"，调用点就会出现在回复里，方便你检查没有漏掉。
 
-#### Fix a bug / 修复 Bug
+##### Port code to another language / 把代码迁移到另一种语言
 
 ```text
-Fix <bug>. First reproduce or locate the cause, then make the smallest change that addresses it. Add a regression test if the project has a suitable test setup. Run the relevant verification command.
+port this Python module to Rust, keeping the same public API and test behavior
 ```
 
 ```text
-修复 <Bug>。先复现或定位原因，再做能解决问题的最小改动。如果项目有合适的测试体系，请补回归测试。运行相关验证命令。
+把这个 Python 模块移植到 Rust，保持相同的公共 API 和测试行为。
 ```
+
+> **Why this works / 这样写为什么有效**：说明要保留什么，而不仅仅是目标语言。指出必须保持不变的 API 或行为，给了 Claude 一个可以用于校对移植结果的契约。
 
-#### Explain a failing test / 解释测试失败
+##### Optimize against a measurable target / 朝可衡量目标优化
 
 ```text
-Explain why this test is failing, using the output below. Identify the real failure, separate it from noise, and propose the smallest fix. Do not change code until you have explained the cause.
+optimize the search query to bring p95 latency from 2s down to under 500ms
 ```
 
 ```text
-根据下面的输出解释这个测试为什么失败。找出真正的失败点，把它和无关噪声区分开，并提出最小修复方案。在解释原因前不要改代码。
+优化搜索查询，把 p95 延迟从 2s 降到 500ms 以下。
 ```
 
-#### Debug a build failure / 排查构建失败
+> **Why this works / 这样写为什么有效**：给出指标和目标，就给了 Claude 明确的"完成"定义。  
+> **Make it stick / 持久化**：设为 `/goal`，让 Claude 持续测量并迭代直至命中目标。
 
+##### Fix a precise visual bug / 修复精确的视觉 Bug
+
 ```text
-Debug this build failure. Read the error output, inspect only the relevant files, and fix the root cause without weakening the build, skipping checks, or deleting assertions.
+the login button extends 20px beyond the card border on mobile. fix it.
 ```
 
 ```text
-排查这个构建失败。阅读错误输出，只检查相关文件，修复根因。不要通过降低构建标准、跳过检查或删除断言来解决。
+登录按钮在移动端上比卡片边框多出 20px。请修复。
 ```
+
+> **Why this works / 这样写为什么有效**：精确的视觉反馈得到精确修复。明确写出元素、量度和视口。  
+> **Make it stick / 持久化**：加上预览工具，让 Claude 自己截图并验证修复。
 
-#### Investigate a production issue / 排查生产问题
+#### Review / 审查
 
+##### Review your changes before you commit / 提交前先审自己的改动 ★ Start 5
+
 ```text
-Investigate <production symptom> using the logs and code available here. Do not touch secrets or production data. Identify likely causes, safe checks, and a low-risk fix or mitigation.
+review my uncommitted changes and flag anything that looks risky before I commit
 ```
 
 ```text
-根据这里可用的日志和代码排查 <生产现象>。不要接触密钥或生产数据。找出可能原因、安全检查方法，以及低风险修复或缓解方案。
+审查我未提交的改动，在我提交前标出任何看起来有风险的地方。
 ```
 
-### 16.6 Test / 测试
+> **Why this works / 这样写为什么有效**：在问题成本最低时就抓住它们。Claude 读的是完整改动文件，而不只是 diff 行，能发现快速自审会漏掉的问题。  
+> **Make it stick / 持久化**：用 `/review` 一条命令完成同样检查。
 
-#### Add missing tests / 补缺失测试
+##### Review a pull request / 审查 PR
 
 ```text
-Add tests for <behavior>. Use the existing test framework and style. Focus on observable behavior, not implementation details. Include edge cases and run the smallest relevant test command.
+review PR #247 and summarize what changed, then list any concerns
 ```
 
 ```text
-为 <行为> 补测试。使用现有测试框架和风格。关注用户可观察行为，而不是实现细节。覆盖边界情况，并运行最小相关测试命令。
+审查 PR #247，总结改动内容，然后列出所有可能的问题。
 ```
+
+> **Why this works / 这样写为什么有效**：Claude 是带着整个代码库上下文来审的，不只看 diff。它读改动代码以及它调用的东西，能发现纯 diff 审查会漏掉的问题。  
+> **Make it stick / 持久化**：在 Code Review 中为每个 PR 打开此能力。  
+> **Needs / 依赖**：已认证的 gh CLI 或将 GitHub 作为 claude.ai connector 接入。
 
-#### Write a regression test / 写回归测试
+##### Review infrastructure changes before applying / 应用前审查基础设施改动
 
 ```text
-Write a regression test for <bug> before changing the implementation. Confirm the test fails for the current behavior, then make the smallest fix and rerun it.
+here is my Terraform plan output. what is this going to do, and is anything here going to cause problems?
 ```
 
 ```text
-在修改实现前，为 <Bug> 写一个回归测试。先确认测试能在当前行为下失败，再做最小修复并重新运行。
+这是我的 Terraform plan 输出。这次执行会做什么？里面有什么可能造成问题的地方？
 ```
 
-#### Improve test reliability / 提升测试稳定性
+> **Why this works / 这样写为什么有效**：plan 输出密集且难扫读。把它粘进来，可以得到一份"实际会改变什么"的白话总结，在 apply 之前看清楚。  
+> **使用方式**：先把 plan 输出粘进 prompt，再发送这条 prompt。
 
+##### Run a security review with a subagent / 用 subagent 做安全审查
+
 ```text
-Make <test or test suite> reliable without hiding real failures. Identify flaky assumptions, timing issues, shared state, or missing mocks, then fix the test in the project’s existing style.
+use a subagent to review src/api/ for security issues and report what it finds
 ```
 
 ```text
-让 <测试或测试套件> 更稳定，但不要掩盖真实失败。找出不稳定假设、时序问题、共享状态或缺失 mock，然后按项目现有风格修复测试。
+用一个 subagent 审查 src/api/ 的安全问题，并报告它发现了什么。
 ```
 
-#### Add coverage for edge cases / 覆盖边界情况
+> **Why this works / 这样写为什么有效**：subagent 在自己的上下文窗口里跑审查，最后把摘要带回主会话，这样一次长篇安全审查不会塞满你的主上下文。内置的 general-purpose subagent 即可胜任，无需额外配置。  
+> **Make it stick / 持久化**：搭建一个团队共享的专用 security-review subagent。
 
+##### Catch issues before formal review / 正式审查前先自查
+
 ```text
-Review <feature> for important edge cases and add focused tests for the gaps. Explain why each added test matters and avoid broad snapshot tests unless the project already uses them.
+review launch-post.md for unsupported claims, missing attributions, and brand-guideline issues and list anything I should fix before it goes to legal
 ```
 
 ```text
-检查 <功能> 的重要边界情况，并为缺口补聚焦测试。解释每个新增测试为什么重要，除非项目已有惯例，否则避免宽泛快照测试。
+审查 launch-post.md 中无依据的论断、缺失的署名以及违反品牌规范的地方，列出送给 legal 之前我应该修复的内容。
 ```
+
+> **Why this works / 这样写为什么有效**：在人花时间之前先做一遍预审。指出你想检查的关切点，审查才会聚焦；修完之后再送出去，初稿就干净得多。  
+> **Make it stick / 持久化**：把你的审查清单沉淀为团队共享的 skill。
 
-### 16.7 Refactor / 重构
+#### Steer / 引导
 
-#### Refactor safely / 安全重构
+##### Course-correct a wrong approach / 纠正错误方向
 
 ```text
-Refactor <area> without changing external behavior. Keep the diff small, preserve public APIs, and run tests before and after if practical. Stop if you discover behavior that needs a product decision.
+that is not right: the function signature needs to stay backward-compatible. try a different approach
 ```
 
 ```text
-在不改变外部行为的前提下重构 <范围>。保持 diff 小，保留公共 API；如果可行，重构前后都运行测试。发现需要产品判断的行为时停止。
+方向不对：函数签名必须保持向后兼容。换一种方式重试。
 ```
 
-#### Reduce duplication / 减少重复
+> **Why this works / 这样写为什么有效**：明确告诉 Claude 它漏掉的约束，而不只是"错了"。具体原因等于在重试时给它一条明确约束，而不是再猜一次。  
+> **Make it stick / 持久化**：按两次 `Esc` 打开回退菜单，把代码和对话一起恢复到干净起点再重试。
 
+##### Narrow the scope of a change / 收窄改动范围
+
 ```text
-Reduce duplication in <area>. Only introduce an abstraction if it removes real repeated logic and matches existing project patterns. Do not create configurability that is not needed now.
+that is too much. keep only the changes to the validation logic in src/forms/ and undo your other edits
 ```
 
 ```text
-减少 <范围> 中的重复。只有在确实能消除重复逻辑并符合项目现有模式时，才引入抽象。不要创建当前不需要的可配置性。
+改得太多了。只保留 src/forms/ 中校验逻辑相关的改动，撤销其它编辑。
 ```
+
+> **Why this works / 这样写为什么有效**：当方向对但改动太广时，让 Claude 只保留其中一部分，而不是全部回退。一个明确的边界能阻止一次小修变成一次重构。
 
-#### Simplify complex code / 简化复杂代码
+##### Turn a correction into a rule / 把一次纠正变成规则
 
 ```text
-Simplify <function or module>. Preserve behavior, improve names or structure where it makes the code easier to read, and avoid changing adjacent code that is unrelated.
+you keep using default exports when this project uses named exports. add a rule to CLAUDE.md so this stops happening
 ```
 
 ```text
-简化 <函数或模块>。保持行为不变，在能提升可读性的地方改进命名或结构，避免修改无关相邻代码。
+你一直用 default exports，但这个项目用 named exports。请在 CLAUDE.md 加一条规则，让这件事不再发生。
 ```
+
+> **Why this works / 这样写为什么有效**：聊天里的纠正不会被团队共享。写进项目的 `CLAUDE.md` 后，一旦提交即对团队共享，并且 Claude 每个会话开始都会读它。  
+> **Make it stick / 持久化**：打开 `/memory` 检查 Claude 写了什么。
+
+---
 
-#### Improve performance / 优化性能
+### 16.5 Ship / 上线
 
+#### Git
+
+##### Resolve merge conflicts / 解决合并冲突
+
 ```text
-Improve performance for <operation> with a measurable target of <metric>. Measure or reason from evidence first, make the smallest change, and show the before/after result.
+resolve the merge conflicts in this branch and explain what you kept from each side
 ```
 
 ```text
-优化 <操作> 的性能，目标指标是 <指标>。先测量或基于证据分析，再做最小改动，并展示前后结果。
+解决这个分支上的合并冲突，并解释你在每一侧分别保留了什么。
 ```
 
-### 16.8 Review / 审查
+> **Why this works / 这样写为什么有效**：说明你想要的最终状态，而不是要保留哪个 marker。让 Claude 解释决策让合并可被审，而不是一个黑盒。
 
-#### Review a diff / 审查当前 diff
+##### Commit with a generated message / 用自动生成的信息提交
 
 ```text
-Review the current diff like a code reviewer. Prioritize bugs, regressions, security issues, missing tests, and project convention violations. List findings first with file and line references.
+commit these changes with a message that summarizes what I did
 ```
 
 ```text
-像代码审查者一样审查当前 diff。优先关注 Bug、回归、安全问题、缺失测试和项目约定违背。先列问题，并给出文件和行号。
+提交这些改动，用一条总结我做了什么的提交信息。
 ```
 
-#### Review for security / 安全审查
+> **Why this works / 这样写为什么有效**：让 Claude 从 diff 推导信息。它会匹配你仓库现有的 commit 风格。
 
+##### Open a pull request from a ticket / 从工单开 PR
+
 ```text
-Review <change or area> for security risks. Look for secret exposure, injection, unsafe permissions, data leaks, weak validation, and risky external inputs. Suggest minimal fixes.
+find the Linear ticket about the login timeout and open a PR that implements it
 ```
 
 ```text
-审查 <改动或范围> 的安全风险。关注密钥暴露、注入、不安全权限、数据泄露、弱校验和危险外部输入。提出最小修复方案。
+找到与登录超时相关的 Linear 工单，并开一个实现它的 PR。
 ```
+
+> **Why this works / 这样写为什么有效**：省去在 tracker、编辑器、GitHub 之间来回切换。一条 prompt 就能读规格、做改动、开 PR。  
+> **Needs / 依赖**：你的 issue tracker 作为 claude.ai connector 或 MCP server 接入。
+
+#### Release / 发布
 
-#### Review a pull request / 审查 PR
+##### Draft release notes from git history / 从 Git 历史起草 release notes
 
 ```text
-Review this pull request. Summarize the intent, then list blocking issues, non-blocking suggestions, and missing verification. Avoid style comments unless they affect maintainability or project consistency.
+compare v2.3.0 to v2.4.0 and draft release notes grouped by feature, fix, and breaking change
 ```
 
 ```text
-审查这个 PR。先总结意图，再列出阻塞问题、非阻塞建议和缺失验证。除非影响可维护性或项目一致性，否则不要提纯风格意见。
+对比 v2.3.0 和 v2.4.0，按 feature、fix、breaking change 三类起草 release notes。
 ```
 
-#### Check release readiness / 检查发布准备度
+> **Why this works / 这样写为什么有效**：给两个参照点和你想要的结构。Claude 读两者之间的 commit log 并起草一份可继续编辑的 changelog。  
+> **Make it stick / 持久化**：把它保存为 `/changelog` skill。
 
+##### Write a CI workflow / 编写 CI 工作流
+
 ```text
-Check whether <change> is ready to release. Review tests, migrations, configuration, rollback, documentation, monitoring, and user-visible behavior. Produce a go/no-go checklist.
+write a GitHub Actions workflow that runs the tests and deploys to staging on every push to main
 ```
 
 ```text
-检查 <改动> 是否可以发布。审查测试、迁移、配置、回滚、文档、监控和用户可见行为。输出 go/no-go 清单。
+写一个 GitHub Actions workflow：每次推送到 main 时跑测试并部署到 staging。
 ```
+
+> **Why this works / 这样写为什么有效**：描述触发时机和要做的事；YAML 会按你项目的构建与测试命令自动生成。
+
+---
+
+### 16.6 Operate / 运行
 
-### 16.9 Document / 文档
+#### Debug / 调试
 
-#### Update documentation / 更新文档
+##### Find and fix a failing test / 定位并修复失败测试 ★ Start 3
 
 ```text
-Update the documentation for <feature or change>. Read the actual implementation first, keep the existing documentation style, and do not describe features that are not implemented.
+the UserAuth test is failing, find out why and fix it
 ```
 
 ```text
-更新 <功能或改动> 的文档。先阅读真实实现，保持现有文档风格，不要描述尚未实现的功能。
+UserAuth 这个测试在失败，找出原因并修复它。
 ```
 
-#### Create onboarding notes / 创建入门说明
+> **Why this works / 这样写为什么有效**：描述症状即可，不需要知道是哪个文件出错。Claude 自己运行测试看失败，再追踪到源代码并修复。
 
+##### Investigate a reported error / 排查上报的错误
+
 ```text
-Create onboarding notes for a new developer joining this project. Include setup, common commands, key directories, testing, deployment, and the most important project conventions.
+users are seeing 500 errors on /api/settings. investigate and tell me what is going on
 ```
 
 ```text
-为新加入项目的开发者创建入门说明。包括安装配置、常用命令、关键目录、测试、部署和最重要的项目约定。
+用户在 /api/settings 上看到 500 错误。请排查并告诉我发生了什么。
 ```
+
+> **Why this works / 这样写为什么有效**：描述症状和位置；Claude 会读相关代码路径并追溯可能原因。如果有 stack trace 或日志就一起粘进来。  
+> **Make it stick / 持久化**：在 runbook 里放一个 deeplink，直接用这条 prompt 打开 Claude。
 
-#### Explain architecture / 解释架构
+##### Fix a build error at the root / 从根因修复构建错误
 
 ```text
-Explain the architecture of <system or module> for a technical teammate. Include responsibilities, data flow, dependencies, extension points, and known limitations.
+here is a build error. fix the root cause and verify the build succeeds
 ```
 
 ```text
-面向技术同事解释 <系统或模块> 的架构。包括职责、数据流、依赖、扩展点和已知限制。
+这是一个构建错误。请修复根因并验证构建成功。
 ```
 
-#### Generate a changelog entry / 生成变更说明
+> **Why this works / 这样写为什么有效**：要求修复根因并验证，可以避免那种只是把错误压下去的表层补丁。  
+> **使用方式**：先把错误输出粘进 prompt，再发送这条 prompt。
 
+#### Incident / 事故
+
+##### Investigate a production incident / 排查生产事故
+
 ```text
-Write a changelog entry for the current changes. Separate user-visible changes, internal changes, fixes, and migration notes. Keep it concise and factual.
+the checkout endpoint started returning 500s an hour ago. check the logs, recent deploys, and config changes, then tell me the most likely cause
 ```
 
 ```text
-为当前改动写一条变更说明。区分用户可见变化、内部变化、修复和迁移说明。保持简洁、事实准确。
+一小时前 checkout 端点开始返回 500。请检查日志、最近的发布以及配置变化，然后告诉我最可能的原因。
 ```
 
-### 16.10 Git and Team Workflows / Git 与团队工作流
+> **Why this works / 这样写为什么有效**：列出需要相互印证的证据源，而不是规定步骤。Claude 同时读日志、git 历史和配置来缩小原因范围。  
+> **Make it stick / 持久化**：通过 MCP 接入 Sentry 或你的日志存储。
 
-#### Summarize changes / 总结改动
+##### Diagnose from a console screenshot / 从控制台截图诊断
 
 ```text
-Summarize the current working tree changes. Group them by purpose, mention tests or checks already run, and call out untracked files or changes that should not be committed.
+here is a screenshot of the GCP Kubernetes dashboard. walk me through why this pod is failing and give me the exact commands to fix it
 ```
 
 ```text
-总结当前工作区改动。按目的分组，说明已经运行的测试或检查，并指出未跟踪文件或不应提交的改动。
+这是一张 GCP Kubernetes 控制台的截图。请带我看清这个 pod 为什么失败，并给出我可以直接执行的修复命令。
 ```
+
+> **Why this works / 这样写为什么有效**：云控制台告诉你问题，但不给修复命令。Claude 读截图，把仪表盘翻译成可以直接运行的 kubectl / gcloud / aws 命令。  
+> **使用方式**：粘贴、拖入或用 @ 引用你的截图，然后发送这条 prompt。
 
-#### Prepare a commit / 准备提交
+##### Query logs in plain English / 用自然语言查询日志
 
 ```text
-Prepare a commit message for the current changes. Inspect the diff, choose the clearest scope, and provide one concise subject plus a short body explaining why the change was made.
+show me all failed logins for the auth service over the past 24 hours. write the query, run it, and tell me what stands out
 ```
 
 ```text
-为当前改动准备提交信息。检查 diff，选择最清晰的范围，给出一句简洁标题，并用简短正文说明为什么做这个改动。
+查出过去 24 小时 auth 服务所有失败的登录。写出查询、运行它，并告诉我有什么值得关注。
 ```
 
-#### Draft a PR description / 起草 PR 描述
+> **Why this works / 这样写为什么有效**：直接提问，而不是自己写 SQL。Claude 会构造查询、对接入的日志源运行，并把查询和结果一并展示，方便你核对实际跑了什么。  
+> **Needs / 依赖**：你的数据仓库或日志存储作为 claude.ai connector 或 MCP server 接入。
 
+#### Data / 数据
+
+##### Analyze a data file / 分析数据文件
+
 ```text
-Draft a pull request description for the current changes. Include summary, motivation, testing, screenshots if relevant, rollout notes, and risks reviewers should focus on.
+read @reports/q1-signups.csv, summarize the key patterns, and write the results to an HTML page with charts, then open it in my browser
 ```
 
 ```text
-为当前改动起草 PR 描述。包括摘要、动机、测试、必要截图、发布说明，以及审查者应重点关注的风险。
+读取 @reports/q1-signups.csv，总结关键模式，把结果写成一个带图表的 HTML 页面，然后在浏览器中打开。
 ```
 
-#### Respond to review comments / 回应审查意见
+> **Why this works / 这样写为什么有效**：一次性的问题不需要一次性脚本。指向项目目录里的文件，Claude 会直接读取、找出模式，并把输出写到你指定的位置。  
+> **Make it stick / 持久化**：通过 MCP 接入数据源，而不是导出文件。  
+> **使用方式**：把文件拖进 prompt，或把路径替换成你自己的 @ 引用。
 
+##### Generate variations from performance data / 基于绩效数据生成变体
+
 ```text
-Address these review comments. For each comment, determine whether it requires a code change, a test, a clarification, or a respectful explanation. Keep changes scoped to the review.
+read @ads-performance.csv, find the underperforming headlines, and generate 20 new variations that stay under 90 characters
 ```
 
 ```text
-处理这些审查意见。逐条判断是需要改代码、补测试、澄清，还是给出合理解释。改动范围只限本次审查相关内容。
+读取 @ads-performance.csv，找出表现不佳的标题，并生成 20 个新的变体，每个都不超过 90 个字符。
 ```
 
-### 16.11 Data, Security, and Operations / 数据、安全与运维
+> **Why this works / 这样写为什么有效**：在最前面就声明约束，生成过程才会自始至终都在限制内。Claude 读取指标、选择要替换的对象，并产出符合约束的备选项。  
+> **Make it stick / 持久化**：通过 MCP 接入广告平台，而不是导出文件。
 
-#### Analyze logs / 分析日志
+#### Automate / 自动化
 
+##### Turn a recurring task into a skill / 把重复任务变成 skill
+
 ```text
-Analyze these logs for <problem>. Identify the timeline, likely root cause, affected components, and safe next checks. Do not expose secrets; redact anything sensitive in your summary.
+create a /ship skill for this project that runs the linter and tests, then drafts a commit message
 ```
 
 ```text
-分析这些日志来排查 <问题>。识别时间线、可能根因、受影响组件和安全的下一步检查。不要暴露密钥；总结时遮盖敏感信息。
+为本项目创建一个 /ship skill：先跑 linter 和测试，再起草一条 commit 信息。
 ```
+
+> **Why this works / 这样写为什么有效**：步骤只说一次，作为命令可重复使用。Claude 会写出一个团队任何人都能运行的 skill。
 
-#### Review database changes / 审查数据库变更
+##### Add a hook for repeat behavior / 用 hook 让行为自动化
 
 ```text
-Review this database or schema change. Check compatibility, migration order, indexes, rollback, data backfill, and whether application code handles old and new states safely.
+write a hook that runs prettier after every edit to a .ts or .tsx file
 ```
 
 ```text
-审查这个数据库或 schema 变更。检查兼容性、迁移顺序、索引、回滚、数据回填，以及应用代码是否安全处理新旧状态。
+写一个 hook：在每次编辑 .ts 或 .tsx 文件之后自动运行 prettier。
 ```
 
-#### Create an operational runbook / 创建运维手册
+> **Why this works / 这样写为什么有效**：hook 让行为自动发生，而不是每次都要记得去要求。描述触发和动作，Claude 会写出 hook 配置。
 
+##### Connect a tool with MCP / 用 MCP 连接工具
+
 ```text
-Create a runbook for <incident or operation>. Include symptoms, dashboards or logs to inspect, safe commands, escalation criteria, rollback steps, and what not to do.
+set up the Sentry MCP server so you can read my error reports directly
 ```
 
 ```text
-为 <故障或操作> 创建运维手册。包括现象、要检查的仪表盘或日志、安全命令、升级条件、回滚步骤，以及禁止事项。
+配置 Sentry 的 MCP server，让你可以直接读取我的错误报告。
 ```
+
+> **Why this works / 这样写为什么有效**：把数据源连一次，而不是每个会话都粘贴一次数据。MCP 配置好之后，再问相关问题时 Claude 直接从工具读取。
 
-#### Check privacy risk / 检查隐私风险
+##### Capture what to remember for next time / 记下下次需要记得的事
 
 ```text
-Check <feature or flow> for privacy risks. Identify personal data collected, stored, logged, transmitted, or exposed in UI. Recommend minimal changes to reduce risk.
+summarize what we did this session and suggest what to add to CLAUDE.md
 ```
 
 ```text
-检查 <功能或流程> 的隐私风险。识别被收集、存储、记录、传输或暴露在 UI 中的个人数据。推荐降低风险的最小改动。
+总结我们这次会话做了什么，并建议哪些内容应该加到 CLAUDE.md。
 ```
+
+> **Why this works / 这样写为什么有效**：趁还没忘之前先问。Claude 知道这一轮里它"摸索出来"的东西，会建议写进 `CLAUDE.md`，让下一个会话从这些上下文开始而不是从零再学。
+
+---
+
+### 16.7 What Makes These Prompts Work / 这些 Prompt 为什么有效
 
-### 16.12 What Makes These Prompts Work / 这些 Prompt 为什么有效
+以上 prompt 共享几种模式。识别它们，可以让你把任何一条改写成自己的任务。
 
 #### Describe the outcome, not the steps / 描述结果，而不是规定步骤
+
+说明你想要什么，让 Claude 自己找文件。下面这条不点名任何文件路径也能用。
 
 ```text
 add rate limiting to the public API and make sure existing tests still pass
@@ -458,6 +744,8 @@ add rate limiting to the public API and make sure existing tests still pass
 
 #### Give it a way to check its own work / 给它自检方式
 
+把"运行 / 测试 / 对比 / 验证"放在同一条 prompt 里，Claude 会持续迭代，而不是做完一次就停下。
+
 ```text
 write the migration, run it against the dev database, and confirm the schema matches
 ```
@@ -466,7 +754,9 @@ write the migration, run it against the dev database, and confirm the schema mat
 编写迁移，在开发数据库上运行，并确认 schema 匹配。
 ```
 
-#### Point at a reference / 指向参考实现
+#### Point at a reference / 指向参考
+
+指明一个已经存在的文件、测试或模式，让新代码和你已有的东西保持一致。
 
 ```text
 add a settings page that follows the same layout as the profile page
@@ -478,6 +768,8 @@ add a settings page that follows the same layout as the profile page
 
 #### State the measurable target / 给出可衡量目标
 
+当目标是性能或覆盖率时，给出指标和阈值，让"完成"没有歧义。
+
 ```text
 get the bundle size under 200KB and show me what you removed
 ```
@@ -487,6 +779,8 @@ get the bundle size under 200KB and show me what you removed
 ```
 
 #### Give it the artifact / 提供真实材料
+
+把错误、日志、截图、plan 输出直接粘到 prompt 里，或用 `@` 引用文件。Claude 读原始材料，而不是读你对它的描述。
 
 ```text
 why is the build failing? @build.log
@@ -498,6 +792,8 @@ why is the build failing? @build.log
 
 #### Say how you want the answer / 指定回答形式
 
+指出格式、长度或受众，让解释贴合你接下来要怎么用它。想让某种格式成为默认，设置 output style。
+
 ```text
 explain how the payment retry logic works as an HTML page with a diagram, then open it in my browser
 ```
@@ -506,14 +802,16 @@ explain how the payment retry logic works as an HTML page with a diagram, then o
 把支付重试逻辑解释成一个带图表的 HTML 页面，然后在浏览器中打开。
 ```
 
-### 16.13 Sources and Related Resources / 来源与延伸资源
+---
 
-官方页面提示这些 Prompt 来自 Anthropic 已发布资源中的模式。使用时可以继续参考：
+### 16.8 Sources and Related Resources / 来源与延伸资源
 
-- Claude Code Common workflows: https://code.claude.com/docs/en/common-workflows
-- Claude Code Best practices: https://code.claude.com/docs/en/best-practices
-- How Anthropic teams use Claude Code: https://claude.com/blog/how-anthropic-teams-use-claude-code
-- Scaling agentic coding across your organization: https://resources.anthropic.com/hubfs/Scaling%20agentic%20coding%20across%20your%20organization.pdf
-- Claude Code in Action: https://anthropic.skilljar.com/claude-code-in-action
+官方页面说明这些 Prompt 来自 Anthropic 已发布资源中的模式。每张卡片都会链回它的来源：
 
-当某条 Prompt 在你的项目里效果稳定后，下一步不是反复复制，而是把它沉淀成团队可复用的 `/command`、skill 或项目级 `CLAUDE.md` / `AGENTS.md` 规则。
+- **Common workflows / 常见工作流**：https://code.claude.com/docs/en/common-workflows — 核心任务的分步指南
+- **Best practices / 最佳实践**：https://code.claude.com/docs/en/best-practices — 提示模式与项目配置
+- **How Anthropic teams use Claude Code**：https://claude.com/blog/how-anthropic-teams-use-claude-code — 工程、产品、设计、数据团队的真实工作流，并有 [legal](https://claude.com/blog/how-anthropic-uses-claude-legal)、[marketing](https://claude.com/blog/how-anthropic-uses-claude-marketing) 和 [cybersecurity](https://claude.com/blog/how-anthropic-uses-claude-cybersecurity) 的专项深入
+- **Scaling agentic coding guide / 规模化 agentic coding 指南**：https://resources.anthropic.com/hubfs/Scaling%20agentic%20coding%20across%20your%20organization.pdf — 企业落地指南
+- **Claude Code in Action / 实战课**：https://anthropic.skilljar.com/claude-code-in-action — Anthropic Academy 免费视频课，演示这些模式
+
+当某条 Prompt 在你的项目里效果稳定后，下一步不是反复复制，而是把它沉淀成团队可复用的 [`/command`](https://code.claude.com/docs/en/commands) 或 [skill](https://code.claude.com/docs/en/skills)，并把 Claude 学到的约定记入项目级 [`CLAUDE.md`](https://code.claude.com/docs/en/memory) / `AGENTS.md`。需要更稳的大改动时，先用 [plan mode](https://code.claude.com/docs/en/permission-modes#analyze-before-you-edit-with-plan-mode) 让 Claude 先列文件清单再动手。
