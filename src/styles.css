@@ -31,10 +31,10 @@
   --radius: 10px;
   --radius-sm: 6px;
   --radius-lg: 14px;
-  --sidebar-width: 256px;
+  --sidebar-width: 296px;
   --toc-width: 224px;
-  --content-width: 768px;
-  --page-width: calc(var(--sidebar-width) + var(--content-width) + var(--toc-width) + 128px);
+  --content-width: 760px;
+  --page-width: 1380px;
   --topbar-height: 56px;
   --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
   --font-sans:
@@ -157,6 +157,19 @@ select {
   display: grid;
   grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
   min-height: 100vh;
+  max-width: var(--page-width);
+  margin: 0 auto;
+  background: var(--bg);
+}
+
+@media (min-width: 1440px) {
+  body {
+    background: color-mix(in srgb, var(--bg) 70%, var(--surface-muted));
+  }
+  .shell {
+    border-left: 1px solid var(--line);
+    border-right: 1px solid var(--line);
+  }
 }
 
 .sidebar {
@@ -408,7 +421,7 @@ select {
   background: color-mix(in srgb, var(--bg) 82%, transparent);
   backdrop-filter: saturate(180%) blur(16px);
   -webkit-backdrop-filter: saturate(180%) blur(16px);
-  padding: 0 28px;
+  padding: 0 32px;
 }
 
 .topbar-inner {
@@ -418,7 +431,6 @@ select {
   width: 100%;
   height: 100%;
   margin: 0 auto;
-  max-width: calc(var(--content-width) + var(--toc-width) + 96px);
 }
 
 .icon-button {
@@ -599,10 +611,9 @@ select {
 .content-grid {
   display: grid;
   grid-template-columns: minmax(0, var(--content-width)) var(--toc-width);
-  gap: 72px;
-  max-width: calc(var(--content-width) + var(--toc-width) + 96px);
+  gap: 56px;
   margin: 0 auto;
-  padding: 40px 48px 80px;
+  padding: 40px 32px 80px;
 }
 
 .document {
