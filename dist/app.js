@@ -391,9 +391,9 @@ function renderNav() {
         .join("");
       return `
         <div class="nav-group" data-group="${doc.slug}">
-          <button class="nav-item" data-doc="${doc.slug}" type="button">
-            <strong>${escapeHtml(doc.title)}</strong>
-            <span>${escapeHtml(doc.description)}</span>
+          <button class="nav-item" data-doc="${doc.slug}" type="button" aria-expanded="false">
+            <span class="nav-chev" aria-hidden="true"></span>
+            <span class="nav-label">${escapeHtml(doc.title)}</span>
           </button>
           <div class="section-list">${sections}</div>
         </div>
@@ -476,25 +476,30 @@ function renderDoc(docSlug, sectionSlug) {
   state.currentDocSlug = doc.slug;
   state.currentSectionSlug = section.slug;
   document.title = `${section.title} - ${doc.title} - ${SITE_CONFIG.title}`;
+  const totalSections = (doc.sections || []).length;
+  const sectionIndex = (doc.sections || []).findIndex((item) => item.slug === section.slug) + 1;
   byId("docMeta").innerHTML = `
     <div class="breadcrumb">
-      <span>${escapeHtml(doc.title)} / ${escapeHtml(cleanTitle(section.title))}</span>
-      <code>${escapeHtml(sourceLabel(sourceFile))}</code>
+      <span class="breadcrumb-doc">${escapeHtml(doc.title)}</span>
+      <span class="breadcrumb-sep" aria-hidden="true">›</span>
+      <span class="breadcrumb-section">${escapeHtml(cleanTitle(section.title))}</span>
     </div>
     <h1>${escapeHtml(cleanTitle(section.title))}</h1>
     <p>${escapeHtml(doc.description)}</p>
     <div class="section-progress">
-      <span>第 ${(doc.sections || []).findIndex((item) => item.slug === section.slug) + 1} / ${(doc.sections || []).length} 节</span>
-      <span>最后构建：${escapeHtml(new Date(doc.updatedAt).toLocaleDateString())}</span>
-      <span>来源文件：${escapeHtml(sourceLabel(sourceFile))}</span>
-      <span>来源可信度：分层标注</span>
+      <span class="progress-chip">第 ${sectionIndex} / ${totalSections} 节</span>
+      <code>${escapeHtml(sourceLabel(sourceFile))}</code>
     </div>
   `;
   byId("articleContent").innerHTML = renderMarkdown(sectionBody(section));
   renderToc();
   renderIssues();
   document.querySelectorAll(".nav-group").forEach((item) => item.classList.toggle("open", item.dataset.group === doc.slug));
-  document.querySelectorAll(".nav-item").forEach((item) => item.classList.toggle("active", item.dataset.doc === doc.slug));
+  document.querySelectorAll(".nav-item").forEach((item) => {
+    const active = item.dataset.doc === doc.slug;
+    item.classList.toggle("active", active);
+    item.setAttribute("aria-expanded", active ? "true" : "false");
+  });
   document.querySelectorAll(".section-item").forEach((item) =>
     item.classList.toggle("active", item.dataset.doc === doc.slug && item.dataset.section === section.slug),
   );
