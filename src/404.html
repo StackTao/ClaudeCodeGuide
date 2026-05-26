@@ -3,8 +3,22 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta http-equiv="refresh" content="0; url=/ClaudeCodeGuide/" />
     <title>Claude Code 中文实践文档</title>
+    <script>
+      (function () {
+        var base = "/ClaudeCodeGuide/";
+        var path = location.pathname;
+        var relative = path.indexOf(base) === 0 ? path.slice(base.length) : path.replace(/^\/+/, "");
+        var target = base;
+        if (relative) {
+          target += "?path=/" + encodeURIComponent(relative);
+        }
+        if (location.hash) {
+          target += (target.indexOf("?") >= 0 ? "&" : "?") + "hash=" + encodeURIComponent(location.hash);
+        }
+        location.replace(target);
+      })();
+    </script>
   </head>
   <body>
     <p>正在返回文档首页：<a href="/ClaudeCodeGuide/">Claude Code 中文实践文档</a></p>
