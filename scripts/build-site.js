@@ -30,6 +30,12 @@ const docs = [
     directory: "content/examples",
   },
   {
+    slug: "changelog",
+    title: "Changelog (中文)",
+    description: "Chinese mirror of the official Claude Code changelog",
+    directory: "content/changelog",
+  },
+  {
     slug: "sources",
     title: "Sources",
     description: "Official, GitHub, X, LinuxDO, Reddit, and other references",
