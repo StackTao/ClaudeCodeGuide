@@ -22,6 +22,10 @@ const DOC_LABELS = {
     title: "模板附录",
     description: "可复制的 Prompt、AGENTS.md、Review、CI 和 Hook 模板",
   },
+  changelog: {
+    title: "更新日志",
+    description: "官方 Claude Code 更新日志的中文全量镜像",
+  },
   sources: {
     title: "来源索引",
     description: "官方、GitHub、X、LinuxDO、Reddit 与社区来源",
