@@ -1,6 +1,6 @@
 # Claude Code 必备 Skills、插件与增强工作流指南
 
-> 版本：2026-05-25
+> 版本：2026-05-29
 > 核心修订：本版按“官方基础设施优先、第三方增强按场景启用、社区内容必须标注来源等级”的原则整理。Superpowers、GSD、Codex plugin、last30days、Context7、Code Simplifier 等仍保留为重点观察对象，但不再写成默认必装。
 
 使用前先判断来源等级：

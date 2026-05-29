@@ -117,25 +117,27 @@
 建议：
 
 - 日常实现用 Sonnet。
-- 复杂架构判断、深度调试时临时切 Opus。
+- 复杂架构判断、深度调试时临时切 Opus（当前最新为 Opus 4.8）。
 - 切换模型会让后续响应重新读上下文，长会话可能有成本影响。
-- v2.1.144 起 `/model` 默认仅作用于当前会话；在模型选择器里按 `d` 才把所选模型设为后续新会话的默认值。这意味着临时切 Opus 不会污染团队成员或其他项目的默认。
+- **默认行为在 v2.1.153 反转**：`/model` 现在会把所选模型保存为后续新会话的默认值（与 IDE 行为一致）；在选择器里按 `s` 才表示“仅本次会话”。如果你早先自定义过 `modelPicker:setAsDefault` 键位，需要在 `keybindings.json` 里改名为 `modelPicker:thisSessionOnly`（旧的 `d` 动作已被 `s` 取代）。
 
 ### 4.7 `/effort`
 
-用途：调整推理努力程度。
+用途：调整推理努力程度。Opus 4.8（v2.1.154）默认就是 high。
 
 示例：
 
 ```text
 /effort high
+/effort xhigh
 /effort auto
 ```
 
 适合场景：
 
-- 疑难 bug、架构分析、跨模块重构用 high。
+- 疑难 bug、架构分析、跨模块重构用 high；最难的任务用 `xhigh`（Opus 4.8 起支持，另有 `max`）。
 - 简单文档、格式调整用低或默认。
+- v2.1.154 把选择器滑块标签从 “Speed”/“Intelligence” 改为 “Faster”/“Smarter”。
 
 ### 4.8 `/plan`
 
@@ -386,13 +388,14 @@ Use the code-reviewer subagent to review my recent changes.
 Use the test-runner subagent to run focused tests and summarize failures.
 ```
 
-### 4.17 `/code-review`、`/review`、`/security-review`
+### 4.17 `/code-review`、`/simplify`、`/review`、`/security-review`
 
-用途：审查代码改动，但三者边界不同。
+用途：审查代码改动，但各自边界不同（`/code-review` 与 `/simplify` 关系几个版本反复调整，以下为 ≥ v2.1.154 最终态）。
 
 | 命令 | 官方定位 | 适合场景 |
 |---|---|---|
-| `/code-review [low|medium|high|xhigh|max] [--comment] [target]` | bundled skill，审查当前 diff 或指定目标的 correctness bugs | 合并前找行为 bug，可用 `--comment` 发 GitHub inline comments |
+| `/code-review [low\|medium\|high\|xhigh\|max] [--fix] [--comment] [target]` | bundled skill，找当前 diff 或指定目标的 correctness bugs | 合并前找行为 bug；`--fix` 应用结论，`--comment` 发 GitHub inline comments |
+| `/simplify` | 清理向审查：复用、简化、效率、抽象层级（altitude），并应用修复 | 反过度设计、去重、精简，而非找 bug |
 | `/review [PR]` | 在当前本地 session 中审查 PR | 想在本地读取 PR 并做较深入只读审查 |
 | `/security-review` | 审查当前分支 pending changes 的安全漏洞 | 登录、鉴权、输入处理、secret、文件上传等改动 |
 
@@ -401,6 +404,7 @@ Use the test-runner subagent to run focused tests and summarize failures.
 ```text
 /code-review high
 /code-review --comment
+/simplify
 /review
 /review 123
 /security-review
@@ -414,7 +418,7 @@ Use the test-runner subagent to run focused tests and summarize failures.
 
 注意：
 
-- `/code-review` 旧名 `/simplify` 仍可能兼容，但新文档应使用 `/code-review`。
+- `/simplify` 在 v2.1.147 曾被并入 `/code-review`，但 v2.1.154 起重新独立为“清理向”命令；现在两者是**不同命令**，不要当别名。
 - `/review` 和 `/ultrareview` 都能审 PR；前者在本地 session，后者在云端多 agent sandbox。
 - 安全敏感 PR 建议先 `/code-review high`，再 `/security-review`，最后由人类 review。
 
@@ -821,3 +825,27 @@ Use the test-runner subagent to run focused tests and summarize failures.
 
 - 安装或登录异常先 `/doctor`。
 - 复现性问题再 `/debug`，注意日志隐私。
+
+### 4.39 `/workflows`、`/reload-skills`（v2.1.152 / v2.1.154）
+
+用途：编排后台多 agent 工作流，以及不重启即重扫 skill 目录。
+
+示例：
+
+```text
+/workflows
+/reload-skills
+```
+
+`/workflows`：
+
+- v2.1.154 起，可让 Claude 自行创建工作流，在后台跨数十到上百个 agent 推进，`/workflows` 查看运行状态。
+- 适合大规模审查、迁移、情报搜集这类一个上下文装不下的任务。
+- 代价是 token 消耗可能很大，属于需要用户明确选择的能力，不要默认开。
+
+`/reload-skills`：
+
+- v2.1.152 起，新增或改完 skill 后无需重启会话即可重新扫描 skill 目录。
+- 也可让 `SessionStart` hook 返回 `reloadSkills: true` 自动触发。
+- 配合自建 skills 迭代时省去反复重开会话。
+
